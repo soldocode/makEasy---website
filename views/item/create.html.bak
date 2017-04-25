@@ -33,14 +33,32 @@
         menu={"Progetti":
                       {"on_click":"action_nuovo('')",
                        "child":{
-                                 "Carica Progetto":{"on_click":"action_load()"},
-                                 "----------------":{},
-                                 "Piastra":{"on_click":"action_nuovo('Piastra')"}
+                                 "Carica Progetto":{
+                                                    "on_click":"action_load()",
+                                                    "show":true
+                                                   },
+                                 "----------------":{"show":true},
+                                 "Piastra":{
+                                            "on_click":"action_nuovo('Piastra')",
+                                            "show":true
+                                           },
+                                 "Tronco di Cono":{
+                                                   "on_click":"action_nuovo('Tronco di Cono')",
+                                                   "show":true
+                                                  }
                                },
                        "show":true
                       },
-                  "Costi":{"show":true},
-                  "Produzione":{"show":true}}
+                  "Costi":{"show":false},
+                  "Produzione":{"show":false,
+                                "child":
+                                {
+                                    "Esporta DXF":{"show":true,"on_click":"action_esporta()"},
+                                    "Esporta STL":{"show":true,"on_click":"action_esportaSTL()"},
+                                    "Ordina Prodotto":{"show":false}
+                                }
+                               }
+             }
 
         meForm.loadMenu=function(menu)
         {this.menu=menu;}
@@ -48,25 +66,69 @@
 
         meForm.updateMenu=function()
         {
+            var subMenu=function(sub_menu)
+            {
+                menu_html="<ul style='width: 250px;'>"
+                for (var opt in sub_menu)
+                {
+                    console.log(opt);
+                    if (sub_menu[opt].show)
+                    {
+                        var action=""
+                        if (sub_menu[opt].on_click){action="onclick="+'"'+sub_menu[opt].on_click+'"'}
+                        menu_html+="<li id='"+opt+"'><a "+action+" class='menu'>"+opt+"</a>";
+                        if (sub_menu[opt].child) {menu_html+=subMenu(sub_menu[opt].child)}
+                        menu_html+="</li>";
+                    }
+                }
+                menu_html+="</ul>"
+                return menu_html
+            }
+
             var menu_html="<ul id='menu' style='display:inline;'>"
             for (var opt in this.menu)
             {
                 if (this.menu[opt].show)
                 {
                     var action=""
-                    if (this.menu[opt].on_click){action="onclick="+this.menu[opt].on_click}
-                    menu_html+="<li id="+opt+"><a "+action+" class='menu'>"+opt+"</a></li>";
+                    if (this.menu[opt].on_click){action="onclick="+'"'+this.menu[opt].on_click+'"'}
+                    menu_html+="<li id='"+opt+"'><a "+action+" class='menu'>"+opt+"</a>";
+                    if (this.menu[opt].child) {menu_html+=subMenu(this.menu[opt].child)}
+                    menu_html+="</li>";
                 }
             }
+            menu_html+="</ul>"
             console.log(menu_html)
             $("ul#menu").replaceWith(menu_html);
         }
 
-        meForm.showMenuOption=function(opt)
-        {
 
+        meForm.enableMenuOption=function(opt)
+        {
+          var enableOption=function(menu,opt)
+          {
+            for (var seek_opt in menu)
+                {
+                    if (seek_opt==opt) {menu[seek_opt].show=true;}
+                    else {enableOption(menu[seek_opt].child,opt)}
+                }
+          }
+          enableOption(this.menu,opt);
         }
-       
+
+        meForm.disableMenuOption=function(opt)
+        {
+          var disableOption=function(menu,opt)
+          {
+            for (var seek_opt in menu)
+                {
+                    if (seek_opt==opt) {menu[seek_opt].show=false;}
+                    else {disableOption(menu[seek_opt].child,opt)}
+                }
+          }
+          disableOption(this.menu,opt);
+        }
+
      </script>
 
 </head>
@@ -76,14 +138,6 @@
         <h1 style="color:#CCCCCC">articoli</h1>
         <nav style="display:inline; margin-left:20%;" >
             <ul id="menu" style="display:inline;">
-                <li><a onclick="action_nuovo('')" class="menu">Progetti</a>
-                    <ul style="width: 250px;">
-                        <li><a onclick="action_nuovo('Piastra')" class="menu" >Carica Progetto</a></li>
-                        <li>---------------------</li>
-                        <li><a onclick="action_nuovo('Piastra')" class="menu" >Piastra</a></li>
-                        <li><a onclick="action_nuovo('Tronco di Cono')" class="menu" >Tronco di Cono</a></li>
-                    </ul>
-                </li>
             </ul>
         </nav>
     </div>
@@ -120,7 +174,7 @@
         <img class="svg" src="{{=URL('static/images','view_rear.svg')}}" style="width:36px; height:36px;" onclick=rotate('rear')>
         <img class="svg" src="{{=URL('static/images','view_bottom.svg')}}" style="width:36px; height:36px;" onclick=rotate('bottom')>
         <img class="svg" src="{{=URL('static/images','view_left.svg')}}" style="width:36px; height:36px;" onclick=rotate('left')>
-        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.3;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
+        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.8;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
         <!--
         <div style="display:inline; float:right; margin-top:5px; margin-right:10px;"> Powered by  </div>
         -->
@@ -284,9 +338,10 @@
      function action_nuovo(projectname)
       {
        localStorage.clear();
-       $("li#Salva").remove();
-       $("li#Costi").remove();
-       $("li#Produzione").remove();
+       meForm.disableMenuOption("Costi");
+       meForm.disableMenuOption("Produzione");
+       meForm.updateMenu();
+
        //invio chiamata ajax
        $.ajax({
            url: "{{=URL('item','new')}}",
@@ -297,13 +352,16 @@
                    {
                     if (result.projectname!='')
                     {
-                        $("ul#menu").append( "<li id= 'Costi' ><a onclick='action_taglia()'>Costi</a></li>" );
-                        $("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
-                                "<ul style='width: 300px;'>"+
-                                "<li><a class='menu' onclick='action_esporta()' >Sviluppi (DXF)</a>"+
-                                "<li><a class='menu' onclick='action_esportaSTL()' >Oggetto3D (STL)</a>"+
-                                "<li><a class='menu' onclick='action_archivia()' >Articolo (Item)</a>"+
-                                "</ul></li>")
+                        meForm.enableMenuOption('Costi');
+                        meForm.enableMenuOption('Produzione');
+                        meForm.updateMenu();
+                        //$("ul#menu").append( "<li id= 'Costi' ><a onclick='action_taglia()'>Costi</a></li>" );
+                        //$("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
+                        //        "<ul style='width: 300px;'>"+
+                        //        "<li><a class='menu' onclick='action_esporta()' >Sviluppi (DXF)</a>"+
+                        //        "<li><a class='menu' onclick='action_esportaSTL()' >Oggetto3D (STL)</a>"+
+                        //        "<li><a class='menu' onclick='action_archivia()' >Articolo (Item)</a>"+
+                        //        "</ul></li>")
                         $("#prjScript").replaceWith(result.scripts);
                         localStorage.setItem('prj_script',result.scripts);
                         localStorage.setItem('form_data',result.form);
@@ -388,14 +446,14 @@
 
         if (localStorage.getItem('form_data'))
          {
-           $("ul#menu").append( "<li id= 'Salva' ><a onclick='action_archivia()'>Salva</a></li>" );
-           $("ul#menu").append( "<li id= 'Costi' ><a onclick=alert('Costi')>Costi</a></li>" );
-           $("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
-                                "<ul style='width: 300px;'>"+
-                                "<li><a class='menu' onclick='action_esporta()' >Esporta Sviluppi (DXF)</a>"+
-                                "<li><a class='menu' onclick='action_esportaSTL()' >Esporta Oggetto3D (STL)</a>"+
-                                "<li><a class='menu' onclick=alert('ordine') >Ordina Prodotto</a>"+
-                                "</ul></li>")
+           //$("ul#menu").append( "<li id= 'Salva' ><a onclick='action_archivia()'>Salva</a></li>" );
+           //$("ul#menu").append( "<li id= 'Costi' ><a onclick=alert('Costi')>Costi</a></li>" );
+           //$("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
+           //                     "<ul style='width: 300px;'>"+
+           //                     "<li><a class='menu' onclick='action_esporta()' >Esporta Sviluppi (DXF)</a>"+
+           //                     "<li><a class='menu' onclick='action_esportaSTL()' >Esporta Oggetto3D (STL)</a>"+
+           //                     "<li><a class='menu' onclick=alert('ordine') >Ordina Prodotto</a>"+
+           //                     "</ul></li>")
            $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
            deploy_form();
          }
