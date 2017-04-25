@@ -1,0 +1,423 @@
+<head>
+    <title>Articoli</title>
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans">
+    <link rel="stylesheet" type="text/css" href="{{=URL('static','css/me.css')}}">
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','js/jquery.serializejson.min.js')}}"></script>
+    <script src="{{=URL('static','js/FileSaver.min.js')}}"></script>
+</head>
+
+
+<body>
+    <div id='header' class='header' style="height:50px;z-index: 3;" >
+        <h1 style="color:#CCCCCC">articoli</h1>
+        <nav style="display:inline; margin-left:50px">
+            <ul onclick="action_nuovo()" >Nuovo</ul>
+            <ul onclick="action_esporta()">Esporta DXF</ul>
+            <ul onclick="action_taglia()">Taglia</ul>
+            <ul onclick="action_archivia()">Archivia</ul>
+            <ul onclick="action_costi()">Costi</ul>
+        </nav>
+    </div>
+    <div id='content' class='content' style="z-index:2;">
+
+        <div class='param'
+             style="/*float:left;*/
+                    display:block; 
+                    /*width:25%;*/
+                    z-index:3; 
+                    /*height:90%;*/ 
+                    overflow-y:auto;
+                    overflow-x:hidden;
+                    /*position:absolute;*/
+                    direction:ltr;">
+            <h2 style="margin-left: 10px;">PIASTRE TAGLIATE A PLASMA</h2>
+            {{=form}}
+            <!--<form id="data_form" action="{{=URL('platecut','taglia')}}" method="post" enctype="multipart/form-data">
+              <br>
+              <label  id="labelpiastra" class="campo" >sagoma piastra</label>
+              <select name="shape:number" value="1" onchange="view_form()">
+                  <option value="1">Rettangolare</option>
+                  <option value="2">Circolare</option>
+              </select>
+              <input name="id_hole" type="hidden" value=-1 >
+              <p id="data">
+                <label  id="label1" class="campo" >spessore</label>
+                  <input value='10' class='value' type="number" name="misure1old:number" style="width:5em;" ><br>
+
+                <label  id="label2" class="campo" >larghezza</label>
+                  <input value=500 class='value' type="number" name="misure2:number" style="width:7em;"><br>
+
+                <label  id="label3" class="campo" >altezza</label>
+                  <input value=500 class='value' type="number" name="misure3:number" style="width:7em;"><br>
+
+              </p>
+            </form>
+            <button onclick="add_holes()">Aggiungi Foratura</button>-->
+        </div>
+        <div id="ciao" style="float:left;width:100%;height:90%;z-index: 1;"></div>
+    </div>
+    <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;opacity:0.8;">
+        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="float:right;padding:2px; width:119px; height:39px;">
+        <div id="poweredBy" style="display:inline; float:right; margin-top:5px; margin-right:10px;"> Powered by  </div>
+    </div>
+        <script src="{{=URL('static','js/three.min.js')}}"></script>
+        <script src="{{=URL('static','js/OrthographicTrackballControls.js')}}"></script>
+        <script id="script_shape">
+
+            $( ".param" ).wrap( "<div class='vertical_scrollbar_left'></div>" );
+            $.serializeJSON.defaultOptions.parseAll = true;
+
+            function make_rect(length,width)
+             {
+              var shape = new THREE.Shape();
+              shape.moveTo( -length/2,-width/2 );
+              shape.lineTo( length/2,-width/2  );
+              shape.lineTo( length/2,width/2  );
+              shape.lineTo( -length/2,width/2  );
+              shape.lineTo( -length/2,-width/2 );
+              return shape
+             }
+
+            function make_circle(diameter)
+             {
+              var segmentCount = 36;
+              var radius = diameter/2;
+              var shape = new THREE.Shape();
+               shape.moveTo( Math.cos(0) * radius,Math.sin(0) * radius );
+               for (var i = 1; i <= segmentCount; i++) 
+                {
+                 var theta = (i / segmentCount) * Math.PI * 2;
+                 shape.lineTo( Math.cos(theta) * radius,Math.sin(theta) * radius  );
+                }
+               return shape
+             }
+
+            function make_hole(diameter,x,y)
+             {
+              var segmentCount = 24;
+              var radius = diameter/2;
+              var hpath = new THREE.Path();
+               hpath.moveTo(x + Math.sin(0) * radius,y + Math.cos(0) * radius );
+               for (var i = 1; i <=segmentCount; i++)
+                {
+                 var theta = -(i / segmentCount) * Math.PI * 2;
+                 hpath.lineTo( x + Math.sin(theta) * radius,y + Math.cos(theta) * radius  );
+                }
+               return hpath
+             }
+
+            function action_nuovo()
+             {
+              alert('Nuovo');
+             }
+
+            function action_taglia()
+             {
+              $('#data_form').attr('action',"{{=URL('platecut','taglia')}}");
+              $('#data_form').submit();
+             }
+
+
+             function action_costi()
+             {
+              $('#data_form').attr('action',"{{=URL('platecut','costi')}}");
+              $('#data_form').submit();
+             }
+
+
+            function action_esporta()
+             {
+              //raccolgo dati form in struttura json
+              var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+
+              //invio una chiamata ajax
+              $.ajax({
+                  url: "{{=URL('platecut','esporta_dxf')}}",
+                  type: "POST",
+                  data: {'jsonstring':JSON.stringify(param)},
+                  dataType: "json",
+                  success:function(result)
+                          {
+                           var blob = new Blob(result, {type: "text/plain;charset=utf-8"});
+                           saveAs(blob, "PIASTRA.DXF");
+                          }
+
+                  })
+             }
+
+            function action_archivia()
+             {
+              //raccolgo dati form in struttura json
+              //var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})};
+              var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+              var data=[JSON.stringify(param, null, 4)];
+                 //for (var line in param["data_form"]){
+                 // data.push(line+'\r\n');
+                 //}
+              var blob = new Blob(data, {type: "text/plain;charset=utf-8"});
+              saveAs(blob, "PIASTRA.meItem");
+             }
+
+        </script>
+
+		<script>
+
+            var wWidth = parseFloat($('#ciao').css('width'));
+            var wHeight = parseFloat($('#ciao').css('height'));
+            var viewSize=$("input[name='misure2:number']").val();
+            var aspectRatio=wWidth/wHeight;
+			var scene = new THREE.Scene();
+
+            var camera = new THREE.OrthographicCamera(-aspectRatio*viewSize / 1.5,
+                                                       aspectRatio* viewSize / 1.5,
+                                                       viewSize / 1.5,
+                                                       -viewSize / 1.5, -10000, 10000 );
+
+            var renderer = new THREE.WebGLRenderer({alpha: true});
+            renderer.shadowMapEnabled = true;
+            renderer.shadowMapSoft = true;
+
+            renderer.setSize(wWidth, wHeight);
+            document.getElementById("ciao").appendChild(renderer.domElement);
+
+            //add subtle ambient lighting
+            var ambientLight = new THREE.AmbientLight(0x222222);
+            scene.add(ambientLight);
+
+            var material = new THREE.MeshLambertMaterial({color: 0xEEFFFF});
+
+            var length=$("input[name='misure2:number']").val();
+            var height=$("input[name='misure3:number']").val();
+            var rectShape=make_rect(length,height);
+
+
+            //var rectGeom = new THREE.ShapeGeometry(rectShape);
+            //var rectMesh = new THREE.Mesh(rectGeom,material) ;
+
+
+            var options = {amount: $("input[name='misure1:number']").val(),
+                           steps: 1,
+                           bevelSegments: 0,
+                           bevelSize: 0,
+                           bevelThickness: 0
+                          };
+
+            var extshape =new THREE.Mesh( new THREE.ExtrudeGeometry(rectShape, options),material);
+            // add it to the scene.
+            extshape.castShadow = extshape.receiveShadow = true;
+
+            scene.add(extshape);
+
+            // directional lighting
+            var directionalLightOne = new THREE.DirectionalLight(0xffffff,0.9);
+            directionalLightOne.position.set(0.6, 0.3, 1).normalize();
+            scene.add(directionalLightOne);
+
+            var directionalLightTwo = new THREE.DirectionalLight(0xffffff,0.9);
+            directionalLightTwo.position.set(-0.6, -0.3, -1).normalize();
+            scene.add(directionalLightTwo);
+
+
+            camera.position.z= 1000;
+            camera.position.y= 0;
+            camera.position.x= 0;
+
+
+
+            var cameraControls = new THREE.OrthographicTrackballControls(camera,renderer.domElement);
+
+
+
+			function render()
+            {
+				requestAnimationFrame(render);
+
+                //cube.rotation.x += 0.001;
+                //cube.rotation.y += 0.001;
+
+                cameraControls.update();
+				renderer.render(scene, camera);
+			};
+
+			render();
+		</script>
+</body>
+
+
+<script>
+
+    $(".value").on("change",update_shape);
+    $("select[name='shape:number']").on("change",update_shape);
+    //var holes=[];
+    //var id_hole=0;
+
+    function view_form()
+    {
+        var v=$("select[name='shape:number']").val();
+        if (v == 1)
+        {
+          $('th[id="misure2:number"]').text('larghezza');
+          $('th[id="misure3:number"]').text('altezza');
+          $('tr[id="misure3:number"]').fadeIn();
+         }
+        else
+        {
+          $('th[id="misure2:number"]').text('diametro');
+          $('tr[id="misure3:number"]').fadeOut();
+        }
+    }
+
+
+    function expand(holes)
+    {
+     if ($('th[id="expand'+holes+'"]').text()=='-')
+     {
+      $('tr[id="foratura'+holes+'"]').fadeOut();
+      $('th[id="expand'+holes+'"]').text('+');
+     }
+     else
+     {
+      $('tr[id="foratura'+holes+'"]').fadeIn();
+      $('th[id="expand'+holes+'"]').text('-');
+     }
+    }
+
+
+    function add_holes()
+    {
+     var id_hole=$("input[name='id_hole']").val();
+     id_hole++;
+     $("input[name='id_hole']").val(id_hole);
+
+     var hf_rows=[];
+     var hf_header='<tr id="hforatura'+id_hole+'"><th>'+(id_hole+1)+'a foratura</th>'+
+         '<th class="expand" id="expand'+id_hole+'" onclick="expand('+id_hole+')">-</th></tr>';
+     $('#dbmanage tr:last').before(hf_header);
+
+     var ht_header="<tr id='foratura"+id_hole+"'><td colspan=3><table id='dbmanage' width='100%'>"+
+                    "<colgroup><col width='50%'><col width='5%'><col width='45%'></colgroup>"+
+                    "<tbody>";
+     hf_rows.push('<tr>'+
+                    '<th colspan="2">lavorazione</th>'+
+                    '<td>'+
+                      '<select name="holes['+id_hole+'][work]:number" onchange="view_form()">'+
+                        '<option selected="selected" value="1">Taglio Plasma</option><option value="2">Foratura</option>'+
+                      '</select>'+
+                    '</td></tr>');
+     hf_rows.push('<tr id="diametro:number">'+
+                    '<th colspan="2" id="dia:number">Ø foro</th>'+
+                    '<td>'+
+                    '<input class="value" type="number"name="holes['+id_hole+'][dia]" style="width:5em;">'+
+                    '</td></tr>');
+     hf_rows.push('<tr id="intfo:number">'+
+                    '<th colspan="2" id="intfo:number">interasse foratura</th>'+
+                    '<td>'+
+                    '<input class="value" type="number"name="holes['+id_hole+'][intfo]" style="width:5em;">'+
+                    '</td></tr>');
+     hf_rows.push('<tr id="num:number">'+
+                    '<th colspan="2" id="num:number">numero fori</th>'+
+                    '<td>'+
+                    '<input class="value" type="number"name="holes['+id_hole+'][num]" style="width:5em;">'+
+                    '</td></tr>');
+     hf_rows.push('<tr id="par:number">'+
+                    '<th colspan="2" id="par:number">angolo primo foro</th>'+
+                    '<td>'+
+                    '<input class="value" type="number"name="holes['+id_hole+'][par]" style="width:5em;">'+
+                    '</td></tr>');
+     var ht_footer='</body></table></td></tr>';
+
+
+     $('#dbmanage tr:last').before(ht_header+
+                                   hf_rows[0]+
+                                   hf_rows[1]+
+                                   hf_rows[2]+
+                                   hf_rows[3]+
+                                   hf_rows[4]+
+                                   ht_footer);
+
+     /*$("#data_form").append("<br>"+
+                            "<label id='for"+id_hole+"' class='campo' >"+(id_hole+1)+"a Foratura</label>  "+
+                            "<button class='campo' type='button' id='delete"+id_hole+"'>"+"Elimina</button>"+
+                            "<br>");
+     $("#data_form").append("<label id='lwork"+id_hole+"' class='campo' >Lavorazione</label>  "+
+                            "<select name='holes["+id_hole+"][work]' value='1'>"+
+                            "<option value='1'>Taglio Plasma</option>"+
+                            "<option value='2'>Bulino + Trapano</option>"+
+                            "<option value='3'>Filettato</option>"+"</select><br>")
+     $("#data_form").append("<label id='lfor"+id_hole+"' class='campo' >Ø foro</label> "+
+                            "<input class='value' type='number'name='holes["+id_hole+"][dia]' style='width:5em;' ><br>");
+     $("#data_form").append("<label id='lintfo"+id_hole+"' class='campo' >interasse foratura</label> "+
+                            "<input class='value' type='number' name='holes["+id_hole+"][intfo]' style='width:5em;' ><br>");
+     $("#data_form").append("<label id='lnum"+id_hole+"' class='campo' >numero fori</label> "+
+                            "<input class='value' type='number' name='holes["+id_hole+"][num]' style='width:5em;' ><br>");
+     $("#data_form").append("<label id='lpar"+id_hole+"' class='campo' >angolo primo foro</label> "+
+                            "<input class='value' type='number' name='holes["+id_hole+"][par]' style='width:5em;' ><br>");*/
+     $(".value").on("change",update_shape);
+    }
+
+
+    function update_shape()
+    {
+     wWidth = parseFloat($('#ciao').css("width"));
+     wHeight = parseFloat($('#ciao').css('height'));
+     aspectRatio=wWidth/wHeight;
+        viewSize=$("input[name='misure2:number']").val();
+     camera.left = -aspectRatio*viewSize/1.5 ;
+     camera.right = aspectRatio* viewSize /1.5;
+     camera.top = viewSize /1.5;
+     camera.bottom = - viewSize/1.5 ;
+     camera.updateProjectionMatrix();
+
+     scene.remove(extshape);
+        var type_shape= $("select[name='shape:number']").val();
+     if (type_shape==1)
+     {
+         length=$("input[name='misure2:number']").val();
+         height=$("input[name='misure3:number']").val();
+      rectShape=make_rect(length,height);
+         //rectGeom = new THREE.ShapeGeometry( rectShape );
+         //rectMesh = new THREE.Mesh(rectGeom,material ) ;
+     }
+     else
+     {
+         length=$("input[name='misure2:number']").val();
+      rectShape=make_circle(length);
+         //rectGeom = new THREE.ShapeGeometry( rectShape );
+         //rectMesh = new THREE.Mesh(rectGeom,material ) ;
+     }
+
+     var id_hole=$("input[name='id_hole']").val()
+     if (id_hole>-1)
+     {
+      for (var i = 0; i <= id_hole; i++)
+       {
+        var num_holes=$("input[name='holes["+i+"][num]']").val();
+        var dstart=$("input[name='holes["+i+"][par]']").val();
+        var int_holes=$("input[name='holes["+i+"][intfo]']").val();
+        for (var c = 1; c <= num_holes; c++)
+        {
+         var theta = (((Math.PI * 2)/ num_holes)*c)+((dstart)/360*(Math.PI * 2));
+         var px= Math.cos(theta) * (int_holes/2);
+         var py= Math.sin(theta) * (int_holes/2);
+         rectShape.holes.push(make_hole($("input[name='holes["+i+"][dia]']").val(),px,py));
+        }
+       }
+     }
+
+     var options = {amount: $("input[name='misure1:number']").val(),
+                    steps: 1,
+                    bevelSegments: 0,
+                    bevelSize: 0,
+                    bevelThickness: 0
+                   };
+
+
+     extshape =new THREE.Mesh( new THREE.ExtrudeGeometry(rectShape, options),material);
+     // add it to the scene.
+     extshape.castShadow = extshape.receiveShadow = true;
+     scene.add(extshape);
+
+    }
+</script>

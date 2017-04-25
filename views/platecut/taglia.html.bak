@@ -1,0 +1,437 @@
+<head>
+    <title>Taglio Plasma</title>
+    <link rel="stylesheet" type="text/css" href="{{=URL('static','css/me.css')}}">
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','js/jquery.serializejson.min.js')}}"></script>
+    <script src="{{=URL('static','js/FileSaver.min.js')}}"></script>
+    
+</head>
+
+<body>
+     <div id='header' class='header' style="height:50px;z-index: 3;" >
+        <h1 style="color:#CCCCCC">taglio plasma</h1>
+        <nav style="display:inline; margin-left:50px">
+            <ul onclick="action_nuovo()" >Nuovo</ul>
+            <ul onclick="action_esporta()">Esporta</ul>
+            <ul onclick="action_taglia()">Taglia</ul>
+            <ul onclick="action_archivia()">Archivia</ul>
+        </nav>
+    </div>
+    <div id='content'>
+
+        <div style="float:left; display:block; width:25%;">
+            <form id="data_form" action="{{=URL('platecut','taglia')}}" method="post" enctype="application/json">
+              <br>
+              <label  id="label_lamiera" class="campo" >sagoma lamiera</label>
+              <select name="sheet_shape" value="1" onchange="view_form()">
+                  <option value="1">Rettangolare</option>
+                  <option value="2">Circolare</option>
+              </select>
+
+              <p id="data">
+
+                <label  id="label_margin_bottom" class="campo" >margine inferiore</label>
+                <input value={{=sheet_margin_bottom}} class='value' type="number" name="sheet_margin_bottom" style="width:5em;" >
+                <br>
+
+                <label  id="label_margin_left" class="campo" >margine sinistro</label>
+                <input value={{=sheet_margin_left}} class='value' type="number" name="sheet_margin_left" style="width:5em;" ><br>
+
+                <label  id="label_width" class="campo" >larghezza</label>
+                <input value={{=sheet_width}} class='value' type="number" name="sheet_width" style="width:7em;"><br>
+
+                <label  id="label_height" class="campo" >altezza</label>
+                <input value={{=sheet_height}} class='value' type="number" name="sheet_height" style="width:7em;"><br>
+
+              </p>
+            </form>
+
+            {{=shape_data}}
+
+            <button onclick="make_pgm()">Crea Programma</button>
+        </div>
+        <div id="ciao" style="float:left; width:75%; height:80%;"></div>
+    </div>
+    <div id='footer' style="height:10%; bottom:0px;">
+        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="float:right; width:120px; height:40px;">
+        <div id="poweredBy" style="z-index:-1; display:inline; float:right; margin-top:5px; margin-right:10px;"> Powered by  </div>
+    </div>
+        <script src="{{=URL('static','js/three.min.js')}}"></script>
+        <script src="{{=URL('static','js/TrackballControls.js')}}"></script>
+
+
+        <script id="script_shape">
+
+            $.serializeJSON.defaultOptions.parseAll = true;
+
+            function make_rect(length,width)
+             {
+              var shape = new THREE.Shape();
+              shape.moveTo( -length/2,-width/2 );
+              shape.lineTo( -length/2,width/2  );
+              shape.lineTo( length/2,width/2  );
+              shape.lineTo( length/2,-width/2  );
+              shape.lineTo( -length/2,-width/2 );
+              return shape
+             }
+
+            function make_circle(diameter)
+             {
+              var segmentCount = 36;
+              var radius = diameter/2;
+              var shape = new THREE.Shape();
+               shape.moveTo( Math.cos(0) * radius,Math.sin(0) * radius );
+               for (var i = 1; i <= segmentCount; i++) 
+                {
+                 var theta = (i / segmentCount) * Math.PI * 2;
+                 shape.lineTo( Math.cos(theta) * radius,Math.sin(theta) * radius  );
+                }
+               return shape
+             }
+
+            function make_hole(diameter,x,y)
+             {
+              var segmentCount = 24;
+              var radius = diameter/2;
+              var hpath = new THREE.Path();
+               hpath.moveTo(x + Math.cos(0) * radius,y + Math.sin(0) * radius );
+               for (var i = 1; i <= segmentCount; i++)
+                {
+                 var theta = (i / segmentCount) * Math.PI * 2;
+                 hpath.lineTo( x + Math.cos(theta) * radius,y + Math.sin(theta) * radius  );
+                }
+               return hpath
+             }
+
+            function action_nuovo()
+             {
+              alert('Nuovo');
+             }
+
+            function action_taglia()
+             {
+
+             }
+
+            function action_esporta()
+             {
+              alert('Esporta');
+             }
+
+            function action_archivia()
+             {
+              alert('Archivia');
+             }
+
+            function make_pgm()
+             {
+              //raccolgo dati form in struttura json
+              var param={"shape_data":$("#shape_data").serializeJSON({useIntKeysAsArrayIndex: true}),
+                         "data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+
+              //invio una chiamata ajax con i dati del form
+              $.ajax({
+                  url: "{{=URL('platecut','make_pgm')}}",
+                  type: "POST",
+                  data: {'jsonstring':JSON.stringify(param)},
+                  dataType: "json",
+                  success:function(result)
+                          {
+                           var blob = new Blob(result, {type: "text/plain;charset=utf-8"});
+                           saveAs(blob, "1.PGM");
+                          }
+
+                  })
+
+              //stampo la risposta della chiamata
+
+              //alert (JSON.stringify(param));
+             }
+
+        </script>
+
+		<script>
+
+            var wWidth = parseFloat($('#ciao').css('width'));
+            var wHeight = parseFloat($('#ciao').css('height'));
+            var viewSize=$("input[name='misure2:number']").val();
+            var aspectRatio=wWidth/wHeight;
+			var scene = new THREE.Scene();
+            var prod_shape;
+
+            var camera = new THREE.OrthographicCamera(-aspectRatio*viewSize / 1.7,
+                                                       aspectRatio* viewSize / 1.7,
+                                                       viewSize / 1.5, 
+                                                       - viewSize / 1.5, 10000, -10000, 1000 );
+
+            var renderer = new THREE.WebGLRenderer( {alpha: true, antialias:true});
+            renderer.shadowMapEnabled = true;
+            renderer.shadowMapSoft = true;
+
+            renderer.setSize(wWidth, wHeight);
+            document.getElementById("ciao").appendChild(renderer.domElement);
+
+            //add subtle ambient lighting
+            var ambientLight = new THREE.AmbientLight(0x222222);
+            scene.add(ambientLight);
+
+            var material = new THREE.MeshLambertMaterial({color: 0x969675, side:1 , overdraw:true});
+
+            var length=$("input[name='sheet_width']").val();
+            var height=$("input[name='sheet_height']").val();
+            var rectShape=make_rect(length,height);
+
+
+            //var rectGeom = new THREE.ShapeGeometry(rectShape);
+            //var rectMesh = new THREE.Mesh(rectGeom,material) ;
+
+
+            var options = {amount: $("input[name='misure1:number']").val(),
+                           steps: 1,
+                           bevelSegments: 0,
+                           bevelSize: 0,
+                           bevelThickness: 0
+                          };
+
+            var extshape =new THREE.Mesh( new THREE.ExtrudeGeometry(rectShape, options),material);
+            // add it to the scene.
+            extshape.castShadow = extshape.receiveShadow = true;
+            extshape.position.z=$("input[name='misure1:number']").val()/5;
+
+            scene.add(extshape);
+
+            //draw_shape();
+
+            // directional lighting
+            var directionalLightOne = new THREE.DirectionalLight(0xffffff,0.9);
+            directionalLightOne.position.set(0.6, 0.3, 1).normalize();
+            scene.add(directionalLightOne);
+
+            var directionalLightTwo = new THREE.DirectionalLight(0xffffff,0.9);
+            directionalLightTwo.position.set(-0.6, -0.3, -1).normalize();
+            scene.add(directionalLightTwo);
+
+
+            camera.position.z= 1000;
+            camera.position.y= 0;
+            camera.position.x= 0;
+
+
+
+            var cameraControls = new THREE.TrackballControls(camera,renderer.domElement);
+
+
+
+			function render()
+            {
+				requestAnimationFrame(render);
+
+                //cameraControls.update();
+				renderer.render(scene, camera);
+			};
+
+			render();
+		</script>
+</body>
+
+<script>
+    $(".value").on("change",update_sheet);
+    $("select[name='sheet_shape']").on("change",
+      function()
+      {
+       var v=$("select[name='sheet_shape']").val();
+       if (v == 2)
+       {
+         if ($("input[name='shape:number']").val()*1 == 1)
+         {
+          diag=Math.floor(Math.sqrt(Math.pow($("input[name='misure2:number']").val()*1,2)+
+                          Math.pow($("input[name='misure3:number']").val()*1,2)));
+          $("input[name='sheet_width']").val($("input[name='sheet_margin_bottom']").val()*2+diag);
+         }
+         else
+         {
+          $("input[name='sheet_width']").val($("input[name='sheet_margin_bottom']").val()*1+
+                                             $("input[name='misure2:number']").val()*1+10);
+         }
+       }
+       else
+       {
+        if ($("input[name='shape:number']").val()*1 == 1)
+         {
+          $("input[name='sheet_height']").val($("input[name='sheet_margin_bottom']").val()*1+
+                                              $("input[name='misure3:number']").val()*1+
+                                              10
+                                             );
+         $("input[name='sheet_width']").val($("input[name='sheet_margin_left']").val()*1+
+                                            $("input[name='misure2:number']").val()*1+
+                                            10
+                                           );
+         }
+         else
+         {
+          $("input[name='sheet_width']").val($("input[name='sheet_margin_bottom']").val()*1+
+                                             $("input[name='misure2:number']").val()*1+10);
+         }
+       }
+       update_sheet();
+      }
+     );
+
+
+
+    $("input[name='sheet_margin_bottom']").on("change",
+     function()
+      {
+       $("input[name='sheet_height']").val($("input[name='sheet_margin_bottom']").val()*1+
+                                           $("input[name='misure3:number']").val()*1+
+                                           10
+                                          );
+       update_sheet();
+      }
+     );
+
+    $("input[name='sheet_margin_left']").on("change",
+     function()
+      {
+       $("input[name='sheet_width']").val($("input[name='sheet_margin_left']").val()*1+
+                                          $("input[name='misure2:number']").val()*1+
+                                          10
+                                         );
+       update_sheet();
+      }
+     );
+
+
+    function view_form()
+    {
+        var v=$("select[name='sheet_shape']").val();
+        if (v == 1)
+        {
+          $( '#label_margin_bottom' ).text('margine inferiore');
+          $( '#label_margin_left' ).text('margine sinistro');
+          $( '#label_margin_left' ).fadeIn();
+          $( "input[name='sheet_margin_left']" ).fadeIn();
+          $( '#label_width' ).text('larghezza');
+          $( '#label_height' ).text('altezza');
+          $( '#label_height' ).fadeIn();
+          $( "input[name='sheet_height']" ).fadeIn();
+        }
+        else
+        {
+          $( '#label_margin_bottom' ).text('margine disco');
+          $( '#label_margin_left' ).fadeOut();
+          $( "input[name='sheet_margin_left']" ).fadeOut();
+          $( '#label_width' ).text('diametro');
+          $( '#label_height' ).fadeOut();
+          $( "input[name='sheet_height']" ).fadeOut();
+        }
+    }
+
+    function draw_shape()
+    {
+        //wWidth = parseFloat($('#ciao').css("width"));
+        //wHeight = parseFloat($('#ciao').css('height'));
+        //aspectRatio=wWidth/wHeight;
+        //viewSize=$("input[name='misure2']").val();
+        //camera.left = -aspectRatio*viewSize/1.7 ;
+        //camera.right = aspectRatio* viewSize /1.7;
+        //camera.top = viewSize /1.5;
+        //camera.bottom = - viewSize/1.5 ;
+        //camera.updateProjectionMatrix();
+
+        //scene.remove(extshape);
+        var type_shape= $("input[name='shape:number']").val();
+     if (type_shape==1)
+     {
+         length=$("input[name='misure2:number']").val();
+         height=$("input[name='misure3:number']").val();
+      rectShape=make_rect(length,height);
+     }
+     else
+     {
+         length=$("input[name='misure2:number']").val();
+      rectShape=make_circle(length);
+     }
+
+     id_hole=$("input[name='id_hole']").val()
+     if (id_hole>-1)
+     {
+      for (var i = 0; i <= id_hole; i++)
+       {
+        var num_holes=$("input[name='holes["+i+"][num]']").val();
+        var dstart=$("input[name='holes["+i+"][par]']").val();
+        var int_holes=$("input[name='holes["+i+"][intfo]']").val();
+        for (var c = 1; c <= num_holes; c++)
+        {
+         var theta = (((Math.PI * 2)/ num_holes)*c)+((dstart-90)/360*(Math.PI * 2));
+         var px= Math.sin(theta) * (int_holes/2);
+         var py= Math.cos(theta) * (int_holes/2);
+         rectShape.holes.push(make_hole($("input[name='holes["+i+"][dia]']").val(),px,py));
+        }
+       }
+     }
+
+        var options = {amount: $("input[name='misure1:number']").val(),
+                    steps: 1,
+                    bevelSegments: 0,
+                    bevelSize: 0,
+                    bevelThickness: 0
+                    };
+
+     var material_shape = new THREE.MeshLambertMaterial({color: 0xEEFFFF, side:1 , overdraw:true});
+     prod_shape =new THREE.Mesh( new THREE.ExtrudeGeometry(rectShape, options),material_shape);
+     // add it to the scene.
+     prod_shape.castShadow = prod_shape.receiveShadow = true;
+     if ($("select[name='sheet_shape']").val()==1)
+      {
+       prod_shape.position.x=$("input[name='sheet_margin_left']").val()-
+           ($("input[name='sheet_width']").val()-$("input[name='misure2:number']").val())/2;
+       prod_shape.position.y=$("input[name='sheet_margin_bottom']").val()-
+           ($("input[name='sheet_height']").val()-$("input[name='misure3:number']").val())/2;
+      }
+     scene.add(prod_shape);
+
+    }
+
+    function make_sheet()
+    {
+     var material = new THREE.MeshLambertMaterial({color: 0x969675, side:1 , overdraw:true});
+
+     var type_shape= $("select[name='sheet_shape']").val();
+     if (type_shape==1)
+     {
+      length=$("input[name='sheet_width']").val();
+      height=$("input[name='sheet_height']").val();
+      rectShape=make_rect(length,height);
+     }
+     else
+     {
+      length=$("input[name='sheet_width']").val();
+      rectShape=make_circle(length);
+     }
+
+        var options = {amount: $("input[name='misure1:number']").val(),
+                    steps: 1,
+                    bevelSegments: 0,
+                    bevelSize: 0,
+                    bevelThickness: 0
+                    };
+
+     extshape =new THREE.Mesh( new THREE.ExtrudeGeometry(rectShape, options),material);
+     // add it to the scene.
+     extshape.castShadow = extshape.receiveShadow = true;
+        extshape.position.z=$("input[name='misure1:number']").val()/5;
+     scene.add(extshape);
+    }
+
+
+    function update_sheet()
+    {
+     scene.remove(extshape);
+     scene.remove(prod_shape);
+     make_sheet();
+     draw_shape();
+    }
+
+    draw_shape();
+</script>

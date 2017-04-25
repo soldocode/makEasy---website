@@ -1,0 +1,42 @@
+<head>
+    <title>Costi</title>
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans">
+    <link rel="stylesheet" type="text/css" href="{{=URL('static','css/me.css')}}">
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','js/jquery.serializejson.min.js')}}"></script>
+    <script src="{{=URL('static','js/FileSaver.min.js')}}"></script>
+</head>
+
+<body>
+    <div id='header' class='header' style="height:50px;z-index: 3;" >
+        <h1 style="color:#CCCCCC">costi</h1>
+        <nav style="display:inline; margin-left:50px">
+            <ul onclick="action_nuovo()" >Stampa </ul>
+            <ul onclick="action_esporta()">Invia Offerta</ul>
+            <ul onclick="action_taglia()">Aggiungi a Commesse</ul>
+        </nav>
+    </div>
+
+    <div id='content' class='content' style="z-index:2;">
+        <div style="float:left; display:block; width:50%; z-index: 3; position:absolute">
+            <h2>PIASTRE TAGLIATE A PLASMA</h2>
+            <form id="data_form" enctype="multipart/form-data">
+                <table id='dbmanage'>
+                    <colgroup>
+                        <col width="25%">
+                        <col width="5%">
+                        <col width="70%">
+                     </colgroup>
+                    <tr><th>Materiali</th><th style="text-align:center;">+</th></tr>
+                    <tr><td colspan="3">{{=grid_materiali}}</td>
+                    <tr><th>Lavorazioni</th><th style="text-align:center;">+</th></tr>
+                    <tr><td colspan="3">{{=grid_lavorazioni}}</td>
+                </table>
+            </form>
+            <button onclick="add_holes()">Aggiungi Foratura</button>
+        </div>
+        <div id="ciao" style="float:left;width:50%;height:90%;z-index: 3;"></div>
+    </div>
+
+</body>

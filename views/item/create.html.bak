@@ -1,0 +1,406 @@
+<head>
+    <title>makEasy</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans:300">
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/soldocode/webres/master/static/css/me.css">
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','js/jquery.serializejson.min.js')}}"></script>
+    <script src="{{=URL('static','js/FileSaver.min.js')}}"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meForm.js"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEitems.js"></script>
+    <script src="{{=URL('static','js/clipper.js')}}"></script>
+    <script src="{{=URL('static','js/three.min.js')}}"></script>
+    <script src="{{=URL('static','js/STLExporter.js')}}"></script>
+    <script src="{{=URL('static','js/OrthographicTrackballControls.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+
+
+    <script>
+        var meProject={};
+        var PRJdata={}
+    </script>
+    <script id="prjScript">
+       var prjData={};
+       function makeObject(){};
+       function update_shape(){};
+    </script>
+    <style>
+        div.header, #menu ul li, ul a.menu, #dbmanage th {background-color: #6699cc;}
+    </style>
+
+
+    <script id="menuScript">
+
+        menu={"Progetti":
+                      {"on_click":"action_nuovo('')",
+                       "child":{
+                                 "Carica Progetto":{"on_click":"action_load()"},
+                                 "----------------":{},
+                                 "Piastra":{"on_click":"action_nuovo('Piastra')"}
+                               },
+                       "show":true
+                      },
+                  "Costi":{"show":true},
+                  "Produzione":{"show":true}}
+
+        meForm.loadMenu=function(menu)
+        {this.menu=menu;}
+
+
+        meForm.updateMenu=function()
+        {
+            var menu_html="<ul id='menu' style='display:inline;'>"
+            for (var opt in this.menu)
+            {
+                if (this.menu[opt].show)
+                {
+                    var action=""
+                    if (this.menu[opt].on_click){action="onclick="+this.menu[opt].on_click}
+                    menu_html+="<li id="+opt+"><a "+action+" class='menu'>"+opt+"</a></li>";
+                }
+            }
+            console.log(menu_html)
+            $("ul#menu").replaceWith(menu_html);
+        }
+
+        meForm.showMenuOption=function(opt)
+        {
+
+        }
+       
+     </script>
+
+</head>
+
+<body>
+    <div id='header' class='header' style="height:60px;z-index: 3;" >
+        <h1 style="color:#CCCCCC">articoli</h1>
+        <nav style="display:inline; margin-left:20%;" >
+            <ul id="menu" style="display:inline;">
+                <li><a onclick="action_nuovo('')" class="menu">Progetti</a>
+                    <ul style="width: 250px;">
+                        <li><a onclick="action_nuovo('Piastra')" class="menu" >Carica Progetto</a></li>
+                        <li>---------------------</li>
+                        <li><a onclick="action_nuovo('Piastra')" class="menu" >Piastra</a></li>
+                        <li><a onclick="action_nuovo('Tronco di Cono')" class="menu" >Tronco di Cono</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id='content' class='content' style="z-index:2;">
+        <div class='param'
+             style="display:block;
+                    z-index:3;
+                    overflow-y:auto;
+                    overflow-x:hidden;
+                    direction:ltr;">
+
+            <h2 id="title" style="margin-left: 10px;"> </h2>
+            <form action="#" enctype="multipart/form-data" id="data_form" method="post">
+                <table id="dbmanage" width="100%">
+                    <colgroup>
+                        <col width="50%">
+                        <col width="5%">
+                        <col width="45%">
+                    </colgroup>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div id="3Dscene" style="float:left;width:100%;height:90%;z-index: 1;"></div>
+    </div>
+
+    <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;">
+        <img class="svg" src="{{=URL('static/images','view_front.svg')}}" style="width:36px; height:36px;" onclick=rotate('front')>
+        <img class="svg" src="{{=URL('static/images','view_top.svg')}}" style="width:36px; height:36px;" onclick=rotate('top')>
+        <img class="svg" src="{{=URL('static/images','view_right.svg')}}" style="width:36px; height:36px;" onclick=rotate('right')>
+        <img class="svg" src="{{=URL('static/images','view_rear.svg')}}" style="width:36px; height:36px;" onclick=rotate('rear')>
+        <img class="svg" src="{{=URL('static/images','view_bottom.svg')}}" style="width:36px; height:36px;" onclick=rotate('bottom')>
+        <img class="svg" src="{{=URL('static/images','view_left.svg')}}" style="width:36px; height:36px;" onclick=rotate('left')>
+        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.3;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
+        <!--
+        <div style="display:inline; float:right; margin-top:5px; margin-right:10px;"> Powered by  </div>
+        -->
+    </div>
+
+    <script>
+        $(".param").wrap( "<div class='vertical_scrollbar_left'></div>" );
+        $.serializeJSON.defaultOptions.parseAll = true;
+    </script>
+
+    <script id="formScript">
+      //var data
+
+      function rotate(position)
+      {
+       var from =
+           {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z,
+            upX:camera.up.x,
+            upY:camera.up.y,
+            upZ:camera.up.z
+           };
+
+
+       switch(position)
+       {
+        case 'front':
+            var to = {
+                        x: 0.0,
+                        y: -8000.0,
+                        z: 0.0,
+                        upX:0.0,
+                        upY:0.0,
+                        upZ:1.0
+                     };
+            break;
+        case 'top':
+            var to = {
+                        x: 0.0,
+                        y: 0.0,
+                        z: 8000.0,
+                        upX:0.0,
+                        upY:1.0,
+                        upZ:0.0
+                     };
+            break;
+        case 'right':
+            var to = {
+                        x: 8000.0,
+                        y: 0.0,
+                        z: 0.0,
+                        upX:0.0,
+                        upY:0.0,
+                        upZ:1.0
+                     };
+            break;
+         case 'rear':
+            var to = {
+                        x: 0.0,
+                        y: 8000.0,
+                        z: 0.0,
+                        upX:0.0,
+                        upY:0.0,
+                        upZ:1.0
+                     };
+            break;
+        case 'bottom':
+            var to = {
+                        x: 0.0,
+                        y: 0.0,
+                        z: -8000.0,
+                        upX:0.0,
+                        upY:1.0,
+                        upZ:0.0
+                     };
+            break;
+        case 'left':
+            var to = {
+                        x: -8000.0,
+                        y: 0.0,
+                        z: 0.0,
+                        upX:0.0,
+                        upY:0.0,
+                        upZ:1.0
+                     };
+            break;
+       }
+
+       var tween = new TWEEN.Tween(from).to(to, 2000)
+            .easing(TWEEN.Easing.Bounce.Out)
+            .onUpdate(function () {
+            camera.position.set(this.x, this.y, this.z);
+            camera.up.set(this.upX,this.upY,this.upZ)
+            //console.log(this.x);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+        })
+            .onComplete(function () {
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        })
+            .start();
+
+       //render();
+
+      }
+
+      function deploy_form()
+        {
+          $("h2#title").text(localStorage.getItem('prj_name'));
+          var data
+          $('table#dbmanage tbody').html('<tr>');
+
+          PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
+          for (index in PRJdata.form_data)
+          {
+          data=PRJdata.form_data[index];
+          switch(data.class)
+              {
+                  case 'list':
+                      var frows=meForm.editList(data);
+                      break;
+                  case 'number':
+                      var frows=meForm.editNumber(data);
+                      break;
+                  case 'multiple-subform':
+                      var frows=meForm.makeMSForm(data);
+                      break;
+                  case 'switch-fields':
+                      var frows=meForm.editSwitchFields(data);
+                      break;
+                  default:
+                      var frows='';
+              }
+          $('#dbmanage tr:last').before(frows);
+          }
+
+          $('#dbmanage').on("change",function(){ var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})};
+                                              for (index in PRJdata.form_data)
+                                              {
+                                                 data=PRJdata.form_data[index];
+                                                 if (param.data_form[data.name])
+                                                    {PRJdata.form_data[index].value=param.data_form[data.name]}
+                                                 //alert(data.name);
+                                              }
+                                              localStorage.setItem('form_data',JSON.stringify(PRJdata.form_data));
+                                              update_shape();
+                                           }
+                       )
+        }
+
+
+    </script>
+
+
+    <script id="menu_script">
+
+     meForm.loadMenu(menu);
+     meForm.updateMenu();
+     function action_nuovo(projectname)
+      {
+       localStorage.clear();
+       $("li#Salva").remove();
+       $("li#Costi").remove();
+       $("li#Produzione").remove();
+       //invio chiamata ajax
+       $.ajax({
+           url: "{{=URL('item','new')}}",
+           type: "POST",
+           data: {'newproject':projectname},
+           dataType: "json",
+           success:function(result)
+                   {
+                    if (result.projectname!='')
+                    {
+                        $("ul#menu").append( "<li id= 'Costi' ><a onclick='action_taglia()'>Costi</a></li>" );
+                        $("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
+                                "<ul style='width: 300px;'>"+
+                                "<li><a class='menu' onclick='action_esporta()' >Sviluppi (DXF)</a>"+
+                                "<li><a class='menu' onclick='action_esportaSTL()' >Oggetto3D (STL)</a>"+
+                                "<li><a class='menu' onclick='action_archivia()' >Articolo (Item)</a>"+
+                                "</ul></li>")
+                        $("#prjScript").replaceWith(result.scripts);
+                        localStorage.setItem('prj_script',result.scripts);
+                        localStorage.setItem('form_data',result.form);
+                    }
+                    else
+                    {
+                        localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
+                    }
+                    localStorage.setItem('prj_name',result.projectname);
+                    deploy_form();
+                    update_shape();
+                   }
+            })
+      }
+
+     function action_taglia()
+      {
+       $('#data_form').attr('action',"{{=URL('plasmacut','nesting')}}");
+       $('#data_form').submit();
+      }
+
+     function action_costi()
+      {
+       $('#data_form').attr('action',"{{=URL('platecut','costi')}}");
+       $('#data_form').submit();
+      }
+
+     function action_esporta()
+      {
+       //raccolgo dati form in struttura json
+       var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+       //invio una chiamata ajax
+       $.ajax({
+           url: "{{=URL('item','exportDXF')}}",
+           type: "POST",
+           data: {'jsonstring':JSON.stringify(param),
+                  'name':localStorage.getItem('prj_name')},
+           dataType: "json",
+           success:function(result)
+                   {
+                    var blob = new Blob(result, {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, "ITEM.DXF");
+                   }
+
+            })
+      }
+
+
+ function action_esportaSTL()
+      {
+       alert('esportaSTL in azione!!');
+       var blob = new Blob([exportSTL(extshape)], {type: "text/plain;charset=utf-8"});
+       saveAs(blob, "ITEM.STL");
+      }
+
+     function action_archivia()
+      {
+       //raccolgo dati form in struttura json
+       var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+
+       //invio una chiamata ajax
+       $.ajax({
+           url: "{{=URL('item','saveItem')}}",
+           type: "POST",
+           data: {'jsonstring':JSON.stringify(param),
+                  'name':localStorage.getItem('prj_name')},
+           dataType: "json",
+           success:function(result)
+                   {
+                    var blob = new Blob([JSON.stringify(result,null,4)], {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, "ITEM.meItem");
+                   }
+
+            })
+      }
+
+    </script>
+
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEfunctions.js"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEscene.js"></script>
+    <script>
+
+        if (localStorage.getItem('form_data'))
+         {
+           $("ul#menu").append( "<li id= 'Salva' ><a onclick='action_archivia()'>Salva</a></li>" );
+           $("ul#menu").append( "<li id= 'Costi' ><a onclick=alert('Costi')>Costi</a></li>" );
+           $("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
+                                "<ul style='width: 300px;'>"+
+                                "<li><a class='menu' onclick='action_esporta()' >Esporta Sviluppi (DXF)</a>"+
+                                "<li><a class='menu' onclick='action_esportaSTL()' >Esporta Oggetto3D (STL)</a>"+
+                                "<li><a class='menu' onclick=alert('ordine') >Ordina Prodotto</a>"+
+                                "</ul></li>")
+           $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
+           deploy_form();
+         }
+         if (localStorage.getItem('form_data')){update_shape()}
+    </script>
+
+
+</body>
