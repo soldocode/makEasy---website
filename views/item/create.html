@@ -30,7 +30,7 @@
 
     <script id="menuScript">
 
-        meForm.loadMenu 
+        meForm.loadMenu
                  ({"Progetti":
                        {"on_click":"action_nuovo('')",
                         "child":{
@@ -99,17 +99,15 @@
         <div id="3Dscene" style="float:left;width:100%;height:90%;z-index: 1;"></div>
     </div>
 
+
     <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;">
-        <img class="svg" src="{{=URL('static/images','view_front.svg')}}" style="width:36px; height:36px;" onclick=rotate('front')>
-        <img class="svg" src="{{=URL('static/images','view_top.svg')}}" style="width:36px; height:36px;" onclick=rotate('top')>
-        <img class="svg" src="{{=URL('static/images','view_right.svg')}}" style="width:36px; height:36px;" onclick=rotate('right')>
-        <img class="svg" src="{{=URL('static/images','view_rear.svg')}}" style="width:36px; height:36px;" onclick=rotate('rear')>
-        <img class="svg" src="{{=URL('static/images','view_bottom.svg')}}" style="width:36px; height:36px;" onclick=rotate('bottom')>
-        <img class="svg" src="{{=URL('static/images','view_left.svg')}}" style="width:36px; height:36px;" onclick=rotate('left')>
+        <img class="svg" src="{{=URL('static/images','view_front.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('front')>
+        <img class="svg" src="{{=URL('static/images','view_top.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('top')>
+        <img class="svg" src="{{=URL('static/images','view_right.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('right')>
+        <img class="svg" src="{{=URL('static/images','view_rear.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('rear')>
+        <img class="svg" src="{{=URL('static/images','view_bottom.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('bottom')>
+        <img class="svg" src="{{=URL('static/images','view_left.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('left')>
         <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.8;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
-        <!--
-        <div style="display:inline; float:right; margin-top:5px; margin-right:10px;"> Powered by  </div>
-        -->
     </div>
 
     <script>
@@ -117,105 +115,54 @@
         $.serializeJSON.defaultOptions.parseAll = true;
     </script>
 
+
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEfunctions.js"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEscene.js"></script>
+
     <script id="formScript">
-      //var data
 
-      function rotate(position)
-      {
-       var from =
-           {
-            x: camera.position.x,
-            y: camera.position.y,
-            z: camera.position.z,
-            upX:camera.up.x,
-            upY:camera.up.y,
-            upZ:camera.up.z
-           };
+        var VIEW_POSITION={"front":
+                                    {x:0.0,
+                                     y: -8000.0,
+                                     z: 0.0,
+                                     upX:0.0,
+                                     upY:0.0,
+                                     upZ:1.0},
+                                "top":{x: 0.0,
+                                        y: 0.0,
+                                        z: 8000.0,
+                                        upX:0.0,
+                                        upY:1.0,
+                                        upZ:0.0},
+                                "right":{x: 8000.0,
+                                         y: 0.0,
+                                         z: 0.0,
+                                         upX:0.0,
+                                         upY:0.0,
+                                         upZ:1.0},
+                                "rear":{x: 0.0,
+                                        y: 8000.0,
+                                        z: 0.0,
+                                        upX:0.0,
+                                        upY:0.0,
+                                        upZ:1.0},
+                                "bottom":{x: 0.0,
+                                          y: 0.0,
+                                          z: -8000.0,
+                                          upX:0.0,
+                                          upY:1.0,
+                                          upZ:0.0},
+                                "left":{x: -8000.0,
+                                        y: 0.0,
+                                        z: 0.0,
+                                        upX:0.0,
+                                        upY:0.0,
+                                        upZ:1.0
+                                        }
+        }
 
 
-       switch(position)
-       {
-        case 'front':
-            var to = {
-                        x: 0.0,
-                        y: -8000.0,
-                        z: 0.0,
-                        upX:0.0,
-                        upY:0.0,
-                        upZ:1.0
-                     };
-            break;
-        case 'top':
-            var to = {
-                        x: 0.0,
-                        y: 0.0,
-                        z: 8000.0,
-                        upX:0.0,
-                        upY:1.0,
-                        upZ:0.0
-                     };
-            break;
-        case 'right':
-            var to = {
-                        x: 8000.0,
-                        y: 0.0,
-                        z: 0.0,
-                        upX:0.0,
-                        upY:0.0,
-                        upZ:1.0
-                     };
-            break;
-         case 'rear':
-            var to = {
-                        x: 0.0,
-                        y: 8000.0,
-                        z: 0.0,
-                        upX:0.0,
-                        upY:0.0,
-                        upZ:1.0
-                     };
-            break;
-        case 'bottom':
-            var to = {
-                        x: 0.0,
-                        y: 0.0,
-                        z: -8000.0,
-                        upX:0.0,
-                        upY:1.0,
-                        upZ:0.0
-                     };
-            break;
-        case 'left':
-            var to = {
-                        x: -8000.0,
-                        y: 0.0,
-                        z: 0.0,
-                        upX:0.0,
-                        upY:0.0,
-                        upZ:1.0
-                     };
-            break;
-       }
-
-       var tween = new TWEEN.Tween(from).to(to, 2000)
-            .easing(TWEEN.Easing.Bounce.Out)
-            .onUpdate(function () {
-            camera.position.set(this.x, this.y, this.z);
-            camera.up.set(this.upX,this.upY,this.upZ)
-            //console.log(this.x);
-            camera.lookAt(new THREE.Vector3(0, 0, 0));
-        })
-            .onComplete(function () {
-            camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-        })
-            .start();
-
-       //render();
-
-      }
-
-      function deploy_form()
+        function deploy_form()
         {
           $("h2#title").text(localStorage.getItem('prj_name'));
           var data
@@ -264,7 +211,7 @@
 
 
     <script id="menu_script">
-     meForm.loadMenu 
+        meForm.loadMenu
                  ({"Progetti":
                        {"on_click":"action_nuovo('')",
                         "child":{
@@ -296,14 +243,14 @@
              })
 
 
-     meForm.updateMenu();
+        meForm.updateMenu();
 
-     function action_nuovo(projectname)
-      {
-       localStorage.clear();
-       meForm.disableMenuOption("Costi");
-       meForm.disableMenuOption("Produzione");
-       meForm.updateMenu();
+        function action_nuovo(projectname)
+        {
+            localStorage.clear();
+            meForm.disableMenuOption("Costi");
+            meForm.disableMenuOption("Produzione");
+            meForm.updateMenu();
 
        //invio chiamata ajax
        $.ajax({
@@ -318,13 +265,7 @@
                         meForm.enableMenuOption('Costi');
                         meForm.enableMenuOption('Produzione');
                         meForm.updateMenu();
-                        //$("ul#menu").append( "<li id= 'Costi' ><a onclick='action_taglia()'>Costi</a></li>" );
-                        //$("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
-                        //        "<ul style='width: 300px;'>"+
-                        //        "<li><a class='menu' onclick='action_esporta()' >Sviluppi (DXF)</a>"+
-                        //        "<li><a class='menu' onclick='action_esportaSTL()' >Oggetto3D (STL)</a>"+
-                        //        "<li><a class='menu' onclick='action_archivia()' >Articolo (Item)</a>"+
-                        //        "</ul></li>")
+
                         $("#prjScript").replaceWith(result.scripts);
                         localStorage.setItem('prj_script',result.scripts);
                         localStorage.setItem('form_data',result.form);
@@ -339,6 +280,7 @@
                    }
             })
       }
+
 
      function action_taglia()
       {
@@ -380,7 +322,8 @@
        saveAs(blob, "ITEM.STL");
       }
 
-     function action_archivia()
+
+ function action_archivia()
       {
        //raccolgo dati form in struttura json
        var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
@@ -403,24 +346,19 @@
 
     </script>
 
-    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEfunctions.js"></script>
-    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEscene.js"></script>
+
     <script>
 
         if (localStorage.getItem('form_data'))
          {
-           //$("ul#menu").append( "<li id= 'Salva' ><a onclick='action_archivia()'>Salva</a></li>" );
-           //$("ul#menu").append( "<li id= 'Costi' ><a onclick=alert('Costi')>Costi</a></li>" );
-           //$("ul#menu").append( "<li id='Produzione' ><a>Produzione</a>"+
-           //                     "<ul style='width: 300px;'>"+
-           //                     "<li><a class='menu' onclick='action_esporta()' >Esporta Sviluppi (DXF)</a>"+
-           //                     "<li><a class='menu' onclick='action_esportaSTL()' >Esporta Oggetto3D (STL)</a>"+
-           //                     "<li><a class='menu' onclick=alert('ordine') >Ordina Prodotto</a>"+
-           //                     "</ul></li>")
+
+           meForm.enableMenuOption('Costi');
+           meForm.enableMenuOption('Produzione');
+           meForm.updateMenu();
            $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
            deploy_form();
+           update_shape();
          }
-         if (localStorage.getItem('form_data')){update_shape()}
     </script>
 
 

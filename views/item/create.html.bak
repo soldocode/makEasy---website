@@ -71,7 +71,6 @@
                 menu_html="<ul style='width: 250px;'>"
                 for (var opt in sub_menu)
                 {
-                    console.log(opt);
                     if (sub_menu[opt].show)
                     {
                         var action=""
@@ -98,7 +97,6 @@
                 }
             }
             menu_html+="</ul>"
-            console.log(menu_html)
             $("ul#menu").replaceWith(menu_html);
         }
 
