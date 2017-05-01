@@ -13,8 +13,8 @@ sysfolder=pathname.split('web2py')[0]
 prjfolder=sysfolder+"PyApp/makEasy/Projects/"
 sys.path.append(sysfolder+"PyApp/makEasy/")
 
-import makEasy
 
+import makEasy
 
 def create():
     if request.vars.newproject:
@@ -23,14 +23,14 @@ def create():
         path_prj=meprj.Path
 
         # load form structure
-        f = open(prjfolder+path_prj+'/project.json', 'r')
+        f = open(prjfolder+path_prj+'/form.json', 'r')
         PRJdata=json.load(f)
         f.close()
         form=SCRIPT('var PRJdata='+json.dumps(PRJdata))
 
 
         # load js functions
-        f = open(prjfolder+path_prj+'/form.js', 'r')
+        f = open(prjfolder+path_prj+'/project.js', 'r')
         javascriptfunctions=f.read()
         f.close()
         scripts=SCRIPT(javascriptfunctions, _id='prjScript')
@@ -61,13 +61,13 @@ def new():
         path_prj=meprj.Path
 
         # load form structure
-        f = open(prjfolder+path_prj+'/project.json', 'r')
+        f = open(prjfolder+path_prj+'/form.json', 'r')
         PRJdata=json.load(f)
         f.close()
         form=json.dumps(PRJdata["form_data"])
 
         # load js functions
-        f = open(prjfolder+path_prj+'/form.js', 'r')
+        f = open(prjfolder+path_prj+'/project.js', 'r')
         javascriptfunctions=f.read()
         f.close()
         scripts=SCRIPT(javascriptfunctions, _id='prjScript')
