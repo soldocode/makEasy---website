@@ -1,3 +1,7 @@
 #Python files
 *.pyc
 .pyc
+
+#log files
+*.log
+.log

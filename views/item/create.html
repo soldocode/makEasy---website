@@ -19,49 +19,14 @@
         var PRJdata={}
     </script>
     <script id="prjScript">
-       var prjData={};
-       function makeObject(){};
+       //function makeObject(){};
        function update_shape(){};
+       function updateObject(){};
     </script>
     <style>
         div.header, #menu ul li, ul a.menu, #dbmanage th {background-color: #6699cc;}
+        img.camera {width:36px;height:36px;cursor:pointer;}
     </style>
-
-
-    <script id="menuScript">
-
-        meForm.loadMenu
-                 ({"Progetti":
-                       {"on_click":"action_nuovo('')",
-                        "child":{
-                                 "Carica Progetto":{
-                                                    "on_click":"action_load()",
-                                                    "show":true
-                                                   },
-                                 "----------------":{"show":true},
-                                 "Piastra":{
-                                            "on_click":"action_nuovo('Piastra')",
-                                            "show":true
-                                           },
-                                 "Tronco di Cono":{
-                                                   "on_click":"action_nuovo('Tronco di Cono')",
-                                                   "show":true
-                                                  }
-                               },
-                       "show":true
-                      },
-                  "Costi":{"show":false},
-                  "Produzione":{"show":false,
-                                "child":
-                                {
-                                    "Esporta DXF":{"show":true,"on_click":"action_esporta()"},
-                                    "Esporta STL":{"show":true,"on_click":"action_esportaSTL()"},
-                                    "Ordina Prodotto":{"show":false}
-                                }
-                               }
-             })
-
-     </script>
 
 </head>
 
@@ -99,14 +64,13 @@
         <div id="3Dscene" style="float:left;width:100%;height:90%;z-index: 1;"></div>
     </div>
 
-
     <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;">
-        <img class="svg" src="{{=URL('static/images','view_front.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('front')>
-        <img class="svg" src="{{=URL('static/images','view_top.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('top')>
-        <img class="svg" src="{{=URL('static/images','view_right.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('right')>
-        <img class="svg" src="{{=URL('static/images','view_rear.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('rear')>
-        <img class="svg" src="{{=URL('static/images','view_bottom.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('bottom')>
-        <img class="svg" src="{{=URL('static/images','view_left.svg')}}" style="width:36px; height:36px;" onclick=rotateCamera('left')>
+        <img class="svg camera" src="{{=URL('static/images','view_front.svg')}}" onclick=rotateCamera('front')>
+        <img class="svg camera" src="{{=URL('static/images','view_top.svg')}}"   onclick=rotateCamera('top')>
+        <img class="svg camera" src="{{=URL('static/images','view_right.svg')}}" onclick=rotateCamera('right')>
+        <img class="svg camera" src="{{=URL('static/images','view_rear.svg')}}"  onclick=rotateCamera('rear')>
+        <img class="svg camera" src="{{=URL('static/images','view_bottom.svg')}}"onclick=rotateCamera('bottom')>
+        <img class="svg camera" src="{{=URL('static/images','view_left.svg')}}"  onclick=rotateCamera('left')>
         <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.8;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
     </div>
 
@@ -210,7 +174,7 @@
     </script>
 
 
-    <script id="menu_script">
+    <script id="menuScript">
         meForm.loadMenu
                  ({"Progetti":
                        {"on_click":"action_nuovo('')",
@@ -244,6 +208,8 @@
 
 
         meForm.updateMenu();
+
+
 
         function action_nuovo(projectname)
         {
