@@ -79,6 +79,14 @@ def new():
     a={'projectname':projectName,'form':str(form),'scripts':str(scripts)}
     return json.dumps(a)
 
+def createItem():
+    meItem='{}'
+    if request.vars.name:
+        data=json.loads(request.vars.jsonstring)
+        item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
+        meItem=jsonpickle.encode(item)
+
+    return meItem
 
 def saveItem():
     meItem='{}'

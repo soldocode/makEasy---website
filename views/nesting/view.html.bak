@@ -1,0 +1,112 @@
+<head>
+    <title>makEasy</title>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans:300">
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/soldocode/webres/master/static/css/me.css">
+    <script src="{{=URL('static','js/jquery.js')}}"></script>
+    <script src="{{=URL('static','js/jquery.serializejson.min.js')}}"></script>
+    <script src="{{=URL('static','js/FileSaver.min.js')}}"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meForm.js"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEitems.js"></script>
+    <script src="{{=URL('static','js/clipper.js')}}"></script>
+    <script src="{{=URL('static','js/three.min.js')}}"></script>
+    <script src="{{=URL('static','js/STLExporter.js')}}"></script>
+    <script src="{{=URL('static','js/OrthographicTrackballControls.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+
+
+    <style>
+        div.header, #menu ul li, ul a.menu, #dbmanage th {background-color: #6699cc;}
+    </style>
+
+</head>
+
+<body>
+    <div id='header' class='header' style="height:60px;z-index: 3;" >
+        <h1 style="color:#CCCCCC">nesting</h1>
+        <nav style="display:inline; margin-left:20%;" >
+            <ul id="menu" style="display:inline;">
+            </ul>
+        </nav>
+    </div>
+
+    <div id='content' class='content' style="z-index:2;">
+        <div class='param'
+             style="display:block;
+                    z-index:3;
+                    overflow-y:auto;
+                    overflow-x:hidden;
+                    direction:ltr;">
+
+            <h2 id="title" style="margin-left: 10px;"> </h2>
+            <form action="#" enctype="multipart/form-data" id="data_form" method="post">
+                <table id="dbmanage" width="100%">
+                    <colgroup>
+                        <col width="50%">
+                        <col width="5%">
+                        <col width="45%">
+                    </colgroup>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div id="3Dscene" style="float:left;width:100%;height:90%;z-index: 1;"></div>
+    </div>
+
+    <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;">
+        <img src="{{=URL('static/images/','soldinisnc.png')}}" style="opacity:0.8;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
+    </div>
+
+    <script>
+        $(".param").wrap( "<div class='vertical_scrollbar_left'></div>" );
+        $.serializeJSON.defaultOptions.parseAll = true;
+    </script>
+
+
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEfunctions.js"></script>
+    <script src="https://rawgit.com/soldocode/webres/master/static/js/meTHREEscene.js"></script>
+
+    <script id="formScript">
+
+    </script>
+
+
+    <script id="menuScript">
+        meForm.loadMenu
+                 ({"Progetti":
+                       {"on_click":"action_nuovo('')",
+                        "child":{
+                                 "Carica Progetto":{
+                                                    "on_click":"action_load()",
+                                                    "show":true
+                                                   },
+                                 "----------------":{"show":true},
+                                 "Piastra":{
+                                            "on_click":"action_nuovo('Piastra')",
+                                            "show":true
+                                           },
+                                 "Tronco di Cono":{
+                                                   "on_click":"action_nuovo('Tronco di Cono')",
+                                                   "show":true
+                                                  }
+                               },
+                       "show":true
+                      },
+                  "Costi":{"show":false},
+                  "Produzione":{"show":false,
+                                "child":
+                                {
+                                    "Esporta DXF":{"show":true,"on_click":"action_esporta()"},
+                                    "Esporta STL":{"show":true,"on_click":"action_esportaSTL()"},
+                                    "Ordina Prodotto":{"show":false}
+                                }
+                               }
+             })
+
+
+        meForm.updateMenu();
+
+    </script>
+
+</body>
