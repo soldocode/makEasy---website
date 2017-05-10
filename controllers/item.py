@@ -48,7 +48,7 @@ def exportDXF():
         data=json.loads(request.vars.jsonstring)
         item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
         dxf_result=item.ExportDXF()
-
+        print ('yeahhhhhhhhhhhhhhhhhhh')
 
     return json.dumps(dxf_result)
 
