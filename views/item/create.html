@@ -186,21 +186,30 @@
         meForm.loadMenu
                  ({"Progetti":
                        {"on_click":"action_nuovo('')",
-                        "child":{
-                                 "Carica Progetto":{
-                                                    "on_click":"action_load()",
-                                                    "show":true
-                                                   },
-                                 "----------------":{"show":true},
-                                 "Piastra":{
-                                            "on_click":"action_nuovo('Piastra')",
-                                            "show":true
-                                           },
-                                 "Tronco di Cono":{
-                                                   "on_click":"action_nuovo('Tronco di Cono')",
-                                                   "show":true
-                                                  }
+                        "child":
+                            {
+                             "Carica Progetto":
+                               {
+                                "on_click":"action_load()",
+                                "show":true
                                },
+                            "----------------":{"show":true},
+                            "Piastra":
+                               {
+                                "on_click":"action_nuovo('Piastra')",
+                                "show":true
+                               },
+                            "Tronco di Cono":
+                               {
+                                "on_click":"action_nuovo('Tronco di Cono')",
+                                "show":true
+                               },
+                            "Profilo da Lamiera":
+                               {
+                                "on_click":"action_nuovo('Lamiera Piegata')",
+                                "show":true
+                               }
+                            },
                        "show":true
                       },
                   "Costi":{"show":false},

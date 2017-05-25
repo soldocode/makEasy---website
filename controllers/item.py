@@ -48,7 +48,7 @@ def exportDXF():
         data=json.loads(request.vars.jsonstring)
         item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
         dxf_result=item.ExportDXF()
-        print ('yeahhhhhhhhhhhhhhhhhhh')
+        #print ('yeahhhhhhhhhhhhhhhhhhh')
 
     return json.dumps(dxf_result)
 
@@ -57,8 +57,10 @@ def new():
     projectName=''
     if request.vars.newproject:
         projectName=request.vars.newproject
+        print projectName
         meprj=makEasy.projectLibrary[projectName]
         path_prj=meprj.Path
+        print path_prj
 
         # load form structure
         f = open(prjfolder+path_prj+'/form.json', 'r')
