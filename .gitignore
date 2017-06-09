@@ -5,3 +5,6 @@
 #log files
 *.log
 .log
+__init__.pyc
+databases/sql.log
+*.pyc
