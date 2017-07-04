@@ -37,6 +37,7 @@
         <nav style="display:inline; margin-left:20%;" >
             <ul id="menu" style="display:inline;">
             </ul>
+            <input type="file" name="files[]" id="selectfiles" style="display:none">
         </nav>
     </div>
 
@@ -190,7 +191,12 @@
                             {
                              "Carica Progetto":
                                {
-                                "on_click":"action_load()",
+                                "on_click":"$('#selectfiles').trigger('click')",
+                                "show":true
+                               },
+                               "Salva Progetto":
+                               {
+                                "on_click":"action_savePrj()",
                                 "show":true
                                },
                             "----------------":{"show":true},
@@ -225,7 +231,7 @@
 
 
         meForm.updateMenu();
-
+        document.getElementById('selectfiles').addEventListener('change',loadPrj, false);
 
 
         function action_nuovo(projectname)
@@ -265,19 +271,19 @@
       }
 
 
-     function action_taglia()
+    function action_taglia()
       {
        $('#data_form').attr('action',"{{=URL('plasmacut','nesting')}}");
        $('#data_form').submit();
       }
 
-     function action_costi()
+    function action_costi()
       {
        $('#data_form').attr('action',"{{=URL('platecut','costi')}}");
        $('#data_form').submit();
       }
 
-     function action_esporta()
+    function action_esporta()
       {
        //raccolgo dati form in struttura json
        var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
@@ -298,7 +304,7 @@
       }
 
 
- function action_esportaSTL()
+    function action_esportaSTL()
       {
        alert('esportaSTL in azione!!');
        var blob = new Blob([exportSTL(objects.project.element)], {type: "text/plain;charset=utf-8"});
@@ -306,7 +312,7 @@
       }
 
 
- function update_item()
+    function update_item()
       {
        //get form parameters
        var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
@@ -338,8 +344,35 @@
 
       }
 
+    function loadPrj(n)
+     {
+             //Recupera il primo file dalla lista
+             var f = n.target.files[0];
 
- function action_archivia()
+             if (f)
+             {
+                 var r = new FileReader();
+                 r.onload = function(e)
+                     {
+                         var contents = e.target.result;
+                         var result=JSON.parse(contents)
+                         alert(contents)
+                     }
+                 r.readAsText(f);
+             }
+             else {alert("Failed to load file");}
+        }
+
+
+    function action_savePrj()
+    {
+      var data_form=$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})
+      var blob = new Blob([data_form], {type: "text/plain;charset=utf-8"});
+      saveAs(blob, "ITEM.mePrj");
+    }
+
+
+    function action_archivia()
       {
         update_item();
         var blob = new Blob([localStorage.item], {type: "text/plain;charset=utf-8"});
