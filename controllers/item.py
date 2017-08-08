@@ -34,11 +34,19 @@ def create():
         javascriptfunctions=f.read()
         f.close()
         scripts=SCRIPT(javascriptfunctions, _id='prjScript')
+
+        # load project default data
+        f = open(prjfolder+path_prj+'/data.json', 'r')
+        pData=f.read()
+        f.close()
+        prj_data=json.dumps(pData)
+
     else:
         form=SCRIPT('var PRJdata={};')
         scripts=SCRIPT('')
+        prj_data={}
 
-    return locals()
+    return dict(form=form,scripts=scripts,prj_data=prj_data)
 
 
 def exportDXF():
@@ -73,19 +81,27 @@ def new():
         javascriptfunctions=f.read()
         f.close()
         scripts=SCRIPT(javascriptfunctions, _id='prjScript')
+
+        # load project default data
+        f = open(prjfolder+path_prj+'/data.json', 'r')
+        pData=f.read()
+        f.close()
+        prj_data=json.dumps(pData)
+
     else:
         form=[]
         scripts=SCRIPT()
+        prj_data={}
 
     print 'avviato nuovo progetto '+projectName
-    a={'projectname':projectName,'form':str(form),'scripts':str(scripts)}
+    a={'projectname':projectName,'form':form,'scripts':str(scripts),'prj_data':prj_data}
     return json.dumps(a)
 
 def createItem():
     meItem='{}'
     if request.vars.name:
-        data=json.loads(request.vars.jsonstring)
-        item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
+        prj_data=json.loads(request.vars.jsonstring)
+        item=makEasy.newItemFromProject(request.vars.name,prj_data)
         meItem=jsonpickle.encode(item)
 
     return meItem
@@ -93,8 +109,9 @@ def createItem():
 def saveItem():
     meItem='{}'
     if request.vars.name:
-        data=json.loads(request.vars.jsonstring)
-        item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
+        prj_data=json.loads(request.vars.jsonstring)
+        print prj_data
+        item=makEasy.newItemFromProject(request.vars.name,prj_data)
         meItem=jsonpickle.encode(item)
 
     return meItem

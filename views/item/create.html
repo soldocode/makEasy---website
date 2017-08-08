@@ -9,9 +9,9 @@
     <script src="/webres/static/js/meTHREEitems.js"></script>
     <script src="{{=URL('static','js/clipper.js')}}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/85/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
     <script src="{{=URL('static','js/STLExporter.js')}}"></script>
     <script src="{{=URL('static','js/OrthographicTrackballControls.js')}}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
 
 
     <script>
@@ -37,7 +37,7 @@
         <nav style="display:inline; margin-left:20%;" >
             <ul id="menu" style="display:inline;">
             </ul>
-            <input type="file" name="files[]" id="selectfiles" style="display:none">
+            <input type="file" accept=".mePrj," name="files[]" id="selectfiles" style="display:none">
         </nav>
     </div>
 
@@ -135,48 +135,50 @@
           $('table#dbmanage tbody').html('<tr>');
 
           PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
+          pd=JSON.parse(localStorage.prj_data);
           for (index in PRJdata.form_data)
           {
           data=PRJdata.form_data[index];
+          if (pd[data.name]){data.value=pd[data.name]
+              //alert(JSON.stringify(data));
+          }
           switch(data.class)
               {
                   case 'list':
                       var frows=meForm.editList(data);
+                      $('#dbmanage tr:last').before(frows);
                       break;
                   case 'number':
                       var frows=meForm.editNumber(data);
+                      $('#dbmanage tr:last').before(frows);
                       break;
                   case 'multiple-subform':
                       var frows=meForm.makeMSForm(data);
+                      $('#dbmanage tr:last').before(frows);
                       break;
                   case 'switch-fields':
                       var frows=meForm.editSwitchFields(data);
+                      $('#dbmanage tr:last').before(frows);
+                      fname=data.name+':number'
                       break;
                   default:
                       var frows='';
               }
-          $('#dbmanage tr:last').before(frows);
           }
 
-          $('#dbmanage').on("change",function(){ var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})};
-                                              for (index in PRJdata.form_data)   //??????? verificare
-                                              {
-                                                 data=PRJdata.form_data[index];
-                                                 if (param.data_form[data.name])
-                                                    {PRJdata.form_data[index].value=param.data_form[data.name]}
-                                                 //alert(data.name);
-                                              }
-                                              localStorage.setItem('form_data',JSON.stringify(PRJdata.form_data));
-                                              update_shape();
-                                              //console.log('in progress:',modification_in_progress);
-                                              //console.log('parameters modified');
-                                              if (modification_in_progress==false)
-                                                {
-                                                    parameters_modified=true;
-                                                    update_item();
-                                                }
-                                           }
-                       )
+
+          $('#dbmanage').on("change",function()
+                             {
+                                update_prj_data();
+                                update_shape();
+                                if (modification_in_progress==false)
+                                    {
+                                        parameters_modified=true;
+                                        update_item();
+                                    }
+                             }
+                           )
+
         }
 
 
@@ -255,9 +257,17 @@
                         meForm.enableMenuOption('Produzione');
                         meForm.updateMenu();
 
-                        $("#prjScript").replaceWith(result.scripts);
+
                         localStorage.setItem('prj_script',result.scripts);
                         localStorage.setItem('form_data',result.form);
+                        localStorage.setItem('prj_data',result.prj_data);
+                        //alert(result.prj_data);
+                        location.reload();
+
+                        // commentati il 08/08
+                        //$("#prjScript").replaceWith(result.scripts);
+                        //localStorage.setItem('prj_script',result.scripts);
+                        //localStorage.setItem('form_data',result.form);
                     }
                     else
                     {
@@ -312,10 +322,16 @@
       }
 
 
+    function update_prj_data()
+    {
+       localStorage.setItem('prj_data',JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null,4));
+    }
+
+
     function update_item()
       {
        //get form parameters
-       var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+       //var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
        parameters_modified=false
        modification_in_progress=true
 
@@ -323,8 +339,8 @@
        $.ajax({
            url: "{{=URL('item','createItem')}}",
            type: "POST",
-           data: {'jsonstring':JSON.stringify(param),
-                  'name':localStorage.getItem('prj_name')},
+           data: {'jsonstring':localStorage.prj_data,
+                  'name':localStorage.prj_name},
            dataType: "json",
            success:function(result)
                    {
@@ -356,9 +372,13 @@
                      {
                          var contents = e.target.result;
                          var result=JSON.parse(contents)
-                         alert(contents)
+                         localStorage.setItem('form_data',result.form_data)
+                         localStorage.setItem('prj_name',result.prj_name)
+                         localStorage.setItem('prj_script',result.prj_script)
+                         localStorage.setItem('prj_data',result.prj_data)
                      }
                  r.readAsText(f);
+                 location.reload();
              }
              else {alert("Failed to load file");}
         }
@@ -366,9 +386,13 @@
 
     function action_savePrj()
     {
-      var data_form=$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})
-      var blob = new Blob([data_form], {type: "text/plain;charset=utf-8"});
+      var data = JSON.stringify(localStorage,null,'\t');
+      var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
       saveAs(blob, "ITEM.mePrj");
+      //var data_form=JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null, '\t')
+      //alert (data_form);
+      //var blob = new Blob([data_form], {type: "text/plain;charset=utf-8"});
+      //saveAs(blob, "ITEM.mePrj");
     }
 
 
@@ -384,7 +408,7 @@
 
     <script>
 
-        if (localStorage.getItem('form_data'))
+        if (localStorage.prj_data)
          {
 
            meForm.enableMenuOption('Costi');
