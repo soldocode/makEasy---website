@@ -139,9 +139,7 @@
           for (index in PRJdata.form_data)
           {
           data=PRJdata.form_data[index];
-          if (pd[data.name]){data.value=pd[data.name]
-              //alert(JSON.stringify(data));
-          }
+          if (pd[data.name]){data.value=pd[data.name]}
           switch(data.class)
               {
                   case 'list':
@@ -155,6 +153,19 @@
                   case 'multiple-subform':
                       var frows=meForm.makeMSForm(data);
                       $('#dbmanage tr:last').before(frows);
+
+                      // fill subform
+                      if (pd[data.id])
+                          {
+                              var values=pd[data.id]
+                              for (fIndex in values)
+                              {
+                               data.values=values[fIndex]
+                               meForm.addSForm(data);
+                              }
+
+                          }
+
                       break;
                   case 'switch-fields':
                       var frows=meForm.editSwitchFields(data);
