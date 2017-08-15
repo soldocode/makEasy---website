@@ -131,46 +131,51 @@
         function deploy_form()
         {
           $("h2#title").text(localStorage.getItem('prj_name'));
-          var data
           $('table#dbmanage tbody').html('<tr>');
 
+          var pForm,values
+
           PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
-          pd=JSON.parse(localStorage.prj_data);
+          values=JSON.parse(localStorage.prj_data);
+          //alert(values);
+
           for (index in PRJdata.form_data)
           {
-          data=PRJdata.form_data[index];
-          if (pd[data.name]){data.value=pd[data.name]}
-          switch(data.class)
+          pForm=PRJdata.form_data[index];
+          if (values[pForm.name]){pForm.value=values[pForm.name]}
+          switch(pForm.class)
               {
                   case 'list':
-                      var frows=meForm.editList(data);
+                      var frows=meForm.editList(pForm,values[pForm.name]);
                       $('#dbmanage tr:last').before(frows);
                       break;
                   case 'number':
-                      var frows=meForm.editNumber(data);
+                      var frows=meForm.editNumber(pForm,values[pForm.name]);
                       $('#dbmanage tr:last').before(frows);
                       break;
                   case 'multiple-subform':
-                      var frows=meForm.makeMSForm(data);
+                      var frows=meForm.makeMSForm(pForm);
                       $('#dbmanage tr:last').before(frows);
 
                       // fill subform
-                      if (pd[data.id])
+                      //alert (JSON.stringify(values[pForm.id]))
+                      if (values[pForm.id].length>0)
                           {
-                              var values=pd[data.id]
-                              for (fIndex in values)
+                              var vForm=values[pForm.id]
+                              for (fIndex in vForm)
                               {
-                               data.values=values[fIndex]
-                               meForm.addSForm(data);
+                               pForm.values=vForm[fIndex]
+                               //alert(JSON.stringify(pForm.values))
+                               meForm.addSForm(pForm,vForm[fIndex]);
                               }
 
                           }
 
                       break;
                   case 'switch-fields':
-                      var frows=meForm.editSwitchFields(data);
+                      var frows=meForm.editSwitchFields(pForm,values[pForm.name]);
                       $('#dbmanage tr:last').before(frows);
-                      fname=data.name+':number'
+                      fname=pForm.name+':number'
                       break;
                   default:
                       var frows='';
@@ -272,13 +277,8 @@
                         localStorage.setItem('prj_script',result.scripts);
                         localStorage.setItem('form_data',result.form);
                         localStorage.setItem('prj_data',result.prj_data);
-                        //alert(result.prj_data);
                         location.reload();
 
-                        // commentati il 08/08
-                        //$("#prjScript").replaceWith(result.scripts);
-                        //localStorage.setItem('prj_script',result.scripts);
-                        //localStorage.setItem('form_data',result.form);
                     }
                     else
                     {

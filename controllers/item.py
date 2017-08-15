@@ -86,7 +86,7 @@ def new():
         f = open(prjfolder+path_prj+'/data.json', 'r')
         pData=f.read()
         f.close()
-        prj_data=json.dumps(pData)
+        prj_data=pData
 
     else:
         form=[]
