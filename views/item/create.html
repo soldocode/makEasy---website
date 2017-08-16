@@ -137,7 +137,6 @@
 
           PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
           values=JSON.parse(localStorage.prj_data);
-          //alert(values);
 
           for (index in PRJdata.form_data)
           {
@@ -158,14 +157,12 @@
                       $('#dbmanage tr:last').before(frows);
 
                       // fill subform
-                      //alert (JSON.stringify(values[pForm.id]))
                       if (values[pForm.id].length>0)
                           {
                               var vForm=values[pForm.id]
                               for (fIndex in vForm)
                               {
                                pForm.values=vForm[fIndex]
-                               //alert(JSON.stringify(pForm.values))
                                meForm.addSForm(pForm,vForm[fIndex]);
                               }
 
@@ -175,7 +172,7 @@
                   case 'switch-fields':
                       var frows=meForm.editSwitchFields(pForm,values[pForm.name]);
                       $('#dbmanage tr:last').before(frows);
-                      fname=pForm.name+':number'
+                      //fname=pForm.name+':number'
                       break;
                   default:
                       var frows='';
