@@ -87,44 +87,48 @@
 
     <script id="formScript">
 
-        var VIEW_POSITION={"front":
-                                    {x:0.0,
-                                     y: -8000.0,
-                                     z: 0.0,
-                                     upX:0.0,
-                                     upY:0.0,
-                                     upZ:1.0},
-                                "top":{x: 0.0,
-                                        y: 0.0,
-                                        z: 8000.0,
-                                        upX:0.0,
-                                        upY:1.0,
-                                        upZ:0.0},
-                                "right":{x: 8000.0,
-                                         y: 0.0,
-                                         z: 0.0,
-                                         upX:0.0,
-                                         upY:0.0,
-                                         upZ:1.0},
-                                "rear":{x: 0.0,
-                                        y: 8000.0,
-                                        z: 0.0,
-                                        upX:0.0,
-                                        upY:0.0,
-                                        upZ:1.0},
-                                "bottom":{x: 0.0,
-                                          y: 0.0,
-                                          z: -8000.0,
-                                          upX:0.0,
-                                          upY:1.0,
-                                          upZ:0.0},
-                                "left":{x: -8000.0,
-                                        y: 0.0,
-                                        z: 0.0,
-                                        upX:0.0,
-                                        upY:0.0,
-                                        upZ:1.0
-                                        }
+        var VIEW_POSITION={ "front":
+                               {x:0.0,
+                                y: -8000.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "top":
+                               {x: 0.0,
+                                y: 0.0,
+                                z: 8000.0,
+                                upX:0.0,
+                                upY:1.0,
+                                upZ:0.0},
+                            "right":
+                               {x: 8000.0,
+                                y: 0.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "rear":
+                               {x: 0.0,
+                                y: 8000.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "bottom":
+                               {x: 0.0,
+                                y: 0.0,
+                                z: -8000.0,
+                                upX:0.0,
+                                upY:1.0,
+                                upZ:0.0},
+                            "left":
+                               {x: -8000.0,
+                                y: 0.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0}
         }
 
 
@@ -137,47 +141,48 @@
 
           PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
           values=JSON.parse(localStorage.prj_data);
-
-          for (index in PRJdata.form_data)
-          {
-          pForm=PRJdata.form_data[index];
-          if (values[pForm.name]){pForm.value=values[pForm.name]}
-          switch(pForm.class)
-              {
-                  case 'list':
-                      var frows=meForm.editList(pForm,values[pForm.name]);
-                      $('#dbmanage tr:last').before(frows);
-                      break;
-                  case 'number':
-                      var frows=meForm.editNumber(pForm,values[pForm.name]);
-                      $('#dbmanage tr:last').before(frows);
-                      break;
-                  case 'multiple-subform':
-                      var frows=meForm.makeMSForm(pForm);
-                      $('#dbmanage tr:last').before(frows);
+          $('#dbmanage tr:last').before(meForm.makeFormWidget(PRJdata.form_data,values))
+          //for (index in PRJdata.form_data)
+          //{
+          //pForm=PRJdata.form_data[index];
+          //if (values[pForm.name]){pForm.value=values[pForm.name]}
+          //var frows=meForm.makeFormWidget(pForm,values[pForm.name])
+          //switch(pForm.class)
+            //  {
+            //      case 'list':
+            //          var frows=meForm.editList(pForm,values[pForm.name]);
+            //          $('#dbmanage tr:last').before(frows);
+            //          break;
+            //      case 'number':
+            //         var frows=meForm.editNumber(pForm,values[pForm.name]);
+            //          $('#dbmanage tr:last').before(frows);
+            //          break;
+            //      case 'multiple-subform':
+            //          var frows=meForm.makeMSForm(pForm);
+            //          $('#dbmanage tr:last').before(frows);
 
                       // fill subform
-                      if (values[pForm.id].length>0)
-                          {
-                              var vForm=values[pForm.id]
-                              for (fIndex in vForm)
-                              {
-                               pForm.values=vForm[fIndex]
-                               meForm.addSForm(pForm,vForm[fIndex]);
-                              }
+            //          if (values[pForm.id].length>0)
+            //              {
+            //                  var vForm=values[pForm.id]
+            //                  for (fIndex in vForm)
+            //                  {
+            //                   pForm.values=vForm[fIndex]
+            //                   meForm.addSForm(pForm,vForm[fIndex]);
+            //                  }
 
-                          }
+            //              }
 
-                      break;
-                  case 'switch-fields':
-                      var frows=meForm.editSwitchFields(pForm,values[pForm.name]);
-                      $('#dbmanage tr:last').before(frows);
+             //         break;
+             //     case 'switch-fields':
+             //         var frows=meForm.editSwitchFields(pForm,values[pForm.name]);
+             //         $('#dbmanage tr:last').before(frows);
                       //fname=pForm.name+':number'
-                      break;
-                  default:
-                      var frows='';
-              }
-          }
+            //          break;
+             //     default:
+             //         var frows='';
+            //  }
+         // }
 
 
           $('#dbmanage').on("change",function()
