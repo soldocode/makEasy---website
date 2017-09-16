@@ -1,5 +1,6 @@
 <head>
     <title>makEasy</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans:300">
     <link rel="stylesheet" type="text/css" href="/webres/static/css/me.css">
     <script src="{{=URL('static','js/jquery.js')}}"></script>
@@ -12,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
     <script src="{{=URL('static','js/STLExporter.js')}}"></script>
     <script src="{{=URL('static','js/OrthographicTrackballControls.js')}}"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 
     <script>
@@ -142,48 +144,6 @@
           PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
           values=JSON.parse(localStorage.prj_data);
           $('#dbmanage tr:last').before(meForm.makeFormWidget(PRJdata.form_data,values))
-          //for (index in PRJdata.form_data)
-          //{
-          //pForm=PRJdata.form_data[index];
-          //if (values[pForm.name]){pForm.value=values[pForm.name]}
-          //var frows=meForm.makeFormWidget(pForm,values[pForm.name])
-          //switch(pForm.class)
-            //  {
-            //      case 'list':
-            //          var frows=meForm.editList(pForm,values[pForm.name]);
-            //          $('#dbmanage tr:last').before(frows);
-            //          break;
-            //      case 'number':
-            //         var frows=meForm.editNumber(pForm,values[pForm.name]);
-            //          $('#dbmanage tr:last').before(frows);
-            //          break;
-            //      case 'multiple-subform':
-            //          var frows=meForm.makeMSForm(pForm);
-            //          $('#dbmanage tr:last').before(frows);
-
-                      // fill subform
-            //          if (values[pForm.id].length>0)
-            //              {
-            //                  var vForm=values[pForm.id]
-            //                  for (fIndex in vForm)
-            //                  {
-            //                   pForm.values=vForm[fIndex]
-            //                   meForm.addSForm(pForm,vForm[fIndex]);
-            //                  }
-
-            //              }
-
-             //         break;
-             //     case 'switch-fields':
-             //         var frows=meForm.editSwitchFields(pForm,values[pForm.name]);
-             //         $('#dbmanage tr:last').before(frows);
-                      //fname=pForm.name+':number'
-            //          break;
-             //     default:
-             //         var frows='';
-            //  }
-         // }
-
 
           $('#dbmanage').on("change",function()
                              {
@@ -260,6 +220,9 @@
             meForm.disableMenuOption("Costi");
             meForm.disableMenuOption("Produzione");
             meForm.updateMenu();
+            if (objects.project){scene.remove(objects.project.element)}
+
+
 
        //invio chiamata ajax
        $.ajax({
@@ -373,6 +336,14 @@
 
       }
 
+    function updateAll()
+    {
+        update_prj_data();
+        deploy_form();
+        update_item();
+        update_shape();
+    }
+
     function loadPrj(n)
      {
              //Recupera il primo file dalla lista
@@ -402,10 +373,6 @@
       var data = JSON.stringify(localStorage,null,'\t');
       var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
       saveAs(blob, "ITEM.mePrj");
-      //var data_form=JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null, '\t')
-      //alert (data_form);
-      //var blob = new Blob([data_form], {type: "text/plain;charset=utf-8"});
-      //saveAs(blob, "ITEM.mePrj");
     }
 
 
