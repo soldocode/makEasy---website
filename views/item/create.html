@@ -18,16 +18,16 @@
 
     <script>
         var meProject={};
-        var PRJdata={}
-        var modification_in_progress=false
-        var parameters_modified=true
+        var PRJdata=[];
+        var MODIFICATION_IN_PROGRESS=false
+        var PARAMETERS_MODIFIED=true
     </script>
     <script id="prjScript">
        function update_shape(){};
        function updateObjects(){};
     </script>
     <style>
-        div.header, #menu ul li, ul a.menu, #dbmanage th {background-color: #6699cc;}
+        div.header, #menu ul li, ul a.menu, .makEasy th {background-color: #6699cc;}
         img.camera {width:36px;height:36px;cursor:pointer;}
     </style>
 
@@ -53,7 +53,7 @@
 
             <h2 id="title" style="margin-left: 10px;"> </h2>
             <form action="#" enctype="multipart/form-data" id="data_form" method="post">
-                <table id="dbmanage" width="100%">
+                <table id="projects" class='makEasy' width="100%">
                     <colgroup>
                         <col width="50%">
                         <col width="5%">
@@ -133,31 +133,16 @@
                                 upZ:1.0}
         }
 
-
-        function deploy_form()
-        {
-          $("h2#title").text(localStorage.getItem('prj_name'));
-          $('table#dbmanage tbody').html('<tr>');
-
-          var pForm,values
-
-          PRJdata.form_data=JSON.parse(localStorage.getItem('form_data'))
-          values=JSON.parse(localStorage.prj_data);
-          $('#dbmanage tr:last').before(meForm.makeFormWidget(PRJdata.form_data,values))
-
-          $('#dbmanage').on("change",function()
-                             {
+        function update_all()
+                            {
                                 update_prj_data();
                                 update_shape();
-                                if (modification_in_progress==false)
+                                if (MODIFICATION_IN_PROGRESS==false)
                                     {
-                                        parameters_modified=true;
+                                        PARAMETERS_MODIFIED=true;
                                         update_item();
                                     }
-                             }
-                           )
-
-        }
+                            }
 
 
     </script>
@@ -250,7 +235,7 @@
                         localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
                     }
                     localStorage.setItem('prj_name',result.projectname);
-                    deploy_form();
+                    meForm.deployForm(localStorage.getItem('prj_name'),'projects');
                     update_shape();
                    }
             })
@@ -308,8 +293,8 @@
       {
        //get form parameters
        //var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
-       parameters_modified=false
-       modification_in_progress=true
+       PARAMETERS_MODIFIED=false
+       MODIFICATION_IN_PROGRESS=true
 
        //ajax call
        $.ajax({
@@ -324,11 +309,11 @@
                    },
             complete:function(result)
                   {
-                   if (parameters_modified)
+                   if (PARAMETERS_MODIFIED)
                       {update_item()}
                     else
                       {
-                       modification_in_progress=false;
+                       MODIFICATION_IN_PROGRESS=false;
                        //console.log('in progress:',modification_in_progress)
                       }
                   }
@@ -339,7 +324,7 @@
     function updateAll()
     {
         update_prj_data();
-        deploy_form();
+        meForm.deployForm(localStorage.getItem('prj_name'),'dbmanage');
         update_item();
         update_shape();
     }
@@ -364,7 +349,7 @@
                  r.readAsText(f);
                  location.reload();
              }
-             else {alert("Failed to load file");}
+             else {alert("Problemi nel caricamento del file!");}
         }
 
 
@@ -395,7 +380,7 @@
            meForm.enableMenuOption('Produzione');
            meForm.updateMenu();
            $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
-           deploy_form();
+           meForm.deployForm(localStorage.getItem('prj_name'),'projects');
            update_shape();
            update_item();
          }
