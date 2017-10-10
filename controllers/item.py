@@ -11,10 +11,12 @@ import jsonpickle
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]))
 sysfolder=pathname.split('web2py')[0]
 prjfolder=sysfolder+"PyApp/makEasy/Projects/"
-sys.path.append(sysfolder+"PyApp/makEasy/")
+meFolder=sysfolder+"PyApp/makEasy/"
+sys.path.append(meFolder)
 
 
 import makEasy
+
 
 def create():
     if request.vars.newproject:
@@ -56,7 +58,6 @@ def exportDXF():
         data=json.loads(request.vars.jsonstring)
         item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
         dxf_result=item.ExportDXF()
-        #print ('yeahhhhhhhhhhhhhhhhhhh')
 
     return json.dumps(dxf_result)
 
@@ -65,10 +66,10 @@ def new():
     projectName=''
     if request.vars.newproject:
         projectName=request.vars.newproject
-        print projectName
+        #print projectName
         meprj=makEasy.projectLibrary[projectName]
         path_prj=meprj.Path
-        print path_prj
+        #print path_prj
 
         # load form structure
         f = open(prjfolder+path_prj+'/form.json', 'r')
@@ -94,8 +95,12 @@ def new():
         prj_data={}
 
     print 'avviato nuovo progetto '+projectName
-    a={'projectname':projectName,'form':form,'scripts':str(scripts),'prj_data':prj_data}
+    a={'projectname':projectName,
+       'form':form,'scripts':str(scripts),
+       'prj_data':prj_data,
+       'prj_title':PRJdata["title"]}
     return json.dumps(a)
+
 
 def createItem():
     meItem='{}'
@@ -106,6 +111,7 @@ def createItem():
 
     return meItem
 
+
 def saveItem():
     meItem='{}'
     if request.vars.name:
@@ -115,6 +121,16 @@ def saveItem():
         meItem=jsonpickle.encode(item)
 
     return meItem
+
+
+def getJson():
+    path=meFolder+request.vars.jsonPath
+    source={}
+    #load json structure
+    f = open(path, 'r')
+    source=f.read()
+    f.close()
+    return  json.dumps(dict(source=source,path=path))
 
 
 def view():

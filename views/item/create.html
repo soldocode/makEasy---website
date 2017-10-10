@@ -21,6 +21,7 @@
         var PRJdata=[];
         var MODIFICATION_IN_PROGRESS=false
         var PARAMETERS_MODIFIED=true
+        var MATERIALS={};
     </script>
     <script id="prjScript">
        function update_shape(){};
@@ -149,7 +150,7 @@
 
 
     <script id="menuScript">
-        meForm.loadMenu
+    meForm.loadMenu
                  ({"Progetti":
                        {"on_click":"action_nuovo('')",
                         "child":
@@ -168,6 +169,11 @@
                             "Piastra":
                                {
                                 "on_click":"action_nuovo('Piastra')",
+                                "show":true
+                               },
+                            "Flangia Circolare":
+                               {
+                                "on_click":"action_nuovo('CircularFlange')",
                                 "show":true
                                },
                             "Tronco di Cono":
@@ -195,27 +201,35 @@
              })
 
 
+    meForm.updateMenu();
+    document.getElementById('selectfiles').addEventListener('change',loadPrj, false);
+
+
+    function clear_all()
+    {
+        localStorage.clear();
+        //localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
+        meForm.disableMenuOption("Costi");
+        meForm.disableMenuOption("Produzione");
         meForm.updateMenu();
-        document.getElementById('selectfiles').addEventListener('change',loadPrj, false);
+        meForm.afterDeployForm=function(){update_all();};
+        if (objects.project){scene.remove(objects.project.element)}
+        $('table#projects tbody').empty();
+        $('h2#title').empty();
+    }
 
 
-        function action_nuovo(projectname)
-        {
-            localStorage.clear();
-            meForm.disableMenuOption("Costi");
-            meForm.disableMenuOption("Produzione");
-            meForm.updateMenu();
-            if (objects.project){scene.remove(objects.project.element)}
+    function action_nuovo(projectname)
+    {
+        clear_all();
 
-
-
-       //invio chiamata ajax
-       $.ajax({
-           url: "{{=URL('item','new')}}",
-           type: "POST",
-           data: {'newproject':projectname},
-           dataType: "json",
-           success:function(result)
+        //invio chiamata ajax
+            $.ajax({
+            url: "{{=URL('item','new')}}",
+            type: "POST",
+            data: {'newproject':projectname},
+            dataType: "json",
+            success:function(result)
                    {
                     if (result.projectname!='')
                     {
@@ -227,19 +241,25 @@
                         localStorage.setItem('prj_script',result.scripts);
                         localStorage.setItem('form_data',result.form);
                         localStorage.setItem('prj_data',result.prj_data);
-                        location.reload();
+                        localStorage.setItem('prj_title',result.prj_title);
+                        localStorage.setItem('prj_name',result.projectname);
+                        location.reload(false);
 
                     }
-                    else
-                    {
-                        localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
-                    }
-                    localStorage.setItem('prj_name',result.projectname);
-                    meForm.deployForm(localStorage.getItem('prj_name'),'projects');
-                    update_shape();
+                    //else
+                    //{
+                    //    localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
+                    //}
+                    //localStorage.setItem('prj_name',result.projectname);
+                    //meForm.deployForm('projects',
+                    //                  localStorage.getItem('prj_title'),
+                    //                  JSON.parse(localStorage.form_data),
+                    //                  JSON.parse(localStorage.prj_data));
+                    //update_item();
+                    //update_shape();
                    }
             })
-      }
+    }
 
 
     function action_taglia()
@@ -321,13 +341,17 @@
 
       }
 
-    function updateAll()
+    function refresh_form()
     {
         update_prj_data();
-        meForm.deployForm(localStorage.getItem('prj_name'),'dbmanage');
-        update_item();
-        update_shape();
+
+        meForm.deployForm('projects',
+                          localStorage.prj_title,
+                          JSON.parse(localStorage.form_data),
+                          JSON.parse(localStorage.prj_data));
+
     }
+
 
     function loadPrj(n)
      {
@@ -347,7 +371,8 @@
                          localStorage.setItem('prj_data',result.prj_data)
                      }
                  r.readAsText(f);
-                 location.reload();
+
+                 location.reload(false);
              }
              else {alert("Problemi nel caricamento del file!");}
         }
@@ -368,22 +393,69 @@
         saveAs(blob, "ITEM.meItem");
       }
 
+
     </script>
 
 
     <script>
 
-        if (localStorage.prj_data)
-         {
+    function fill_materials_selector()
+    {
+        $.ajax(
+            {
+               url: "/makeasy/item/getJson",
+               type: "POST",
+              data: {'jsonPath':"Materials/material_quality.json"},
+               dataType: "json",
+               success:function(result)
+                        {
+                            MATERIALS = JSON.parse(result.source)
+                            var htmlOptions=" ";
+                            for (var key in MATERIALS)
+                            {
+                                htmlOptions+="<OPTION value='"+key+"'>"+MATERIALS[key].name+"</OPTION>";
+                            }
+                            var replace="<SELECT name='material:number'>"
+                            replace +=htmlOptions
+                            replace +="</SELECT>"
+                            $("select[name='material:number']").replaceWith(replace);
+                            fill_thickness_selector($("select[name='material:number']").val());
+                            update_all();
+                        }
+            })
+    }
 
-           meForm.enableMenuOption('Costi');
-           meForm.enableMenuOption('Produzione');
-           meForm.updateMenu();
-           $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
-           meForm.deployForm(localStorage.getItem('prj_name'),'projects');
-           update_shape();
-           update_item();
-         }
+
+    function fill_thickness_selector(quality)
+    {
+        var list=MATERIALS[quality].thickness
+        var htmlOptions=" ";
+        for (var key in list)
+        {
+            htmlOptions+="<OPTION value='"+key+"'>"+list[key].name+"</OPTION>";
+        }
+        var replace="<SELECT name='thickness:number'>"
+            replace +=htmlOptions
+       replace +="</SELECT>"
+       $("select[name='thickness:number']").replaceWith(replace);
+    }
+
+
+    if (localStorage.prj_data)
+    {
+
+        meForm.afterDeployForm=function(){update_all();};
+        meForm.enableMenuOption('Costi');
+        meForm.enableMenuOption('Produzione');
+        meForm.updateMenu();
+        $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
+        meForm.deployForm('projects',
+                          localStorage.getItem('prj_title'),
+                          JSON.parse(localStorage.form_data),
+                          JSON.parse(localStorage.prj_data));
+        //update_item();
+        //update_shape();
+    }
 
     </script>
 
