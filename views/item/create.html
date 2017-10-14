@@ -246,17 +246,6 @@
                         location.reload(false);
 
                     }
-                    //else
-                    //{
-                    //    localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
-                    //}
-                    //localStorage.setItem('prj_name',result.projectname);
-                    //meForm.deployForm('projects',
-                    //                  localStorage.getItem('prj_title'),
-                    //                  JSON.parse(localStorage.form_data),
-                    //                  JSON.parse(localStorage.prj_data));
-                    //update_item();
-                    //update_shape();
                    }
             })
     }
@@ -399,13 +388,15 @@
 
     <script>
 
-    function fill_materials_selector()
+    function fill_materials_selector(material=JSON.parse(localStorage.prj_data).material,
+                                     thk=JSON.parse(localStorage.prj_data).thickness)
     {
+        console.log(material);
         $.ajax(
             {
                url: "/makeasy/item/getJson",
                type: "POST",
-              data: {'jsonPath':"Materials/material_quality.json"},
+               data: {'jsonPath':"Materials/material_quality.json"},
                dataType: "json",
                success:function(result)
                         {
@@ -415,19 +406,24 @@
                             {
                                 htmlOptions+="<OPTION value='"+key+"'>"+MATERIALS[key].name+"</OPTION>";
                             }
-                            var replace="<SELECT name='material:number'>"
+                            var replace="<SELECT name='material:string'"
+                            replace +=" onchange=fill_thickness_selector() >"
                             replace +=htmlOptions
                             replace +="</SELECT>"
-                            $("select[name='material:number']").replaceWith(replace);
-                            fill_thickness_selector($("select[name='material:number']").val());
+                            $("select[name='material:string']").replaceWith(replace);
+                            $("select[name='material:string']").val(material)
+                            fill_thickness_selector(material,thk);
+
                             update_all();
                         }
             })
     }
 
 
-    function fill_thickness_selector(quality)
+    function fill_thickness_selector(quality=$("select[name='material:string']").val(),value)
     {
+        if (value==null)
+        {value=JSON.parse(localStorage.prj_data).thickness}
         var list=MATERIALS[quality].thickness
         var htmlOptions=" ";
         for (var key in list)
@@ -438,6 +434,7 @@
             replace +=htmlOptions
        replace +="</SELECT>"
        $("select[name='thickness:number']").replaceWith(replace);
+       $("select[name='thickness:number']").val(value);
     }
 
 
