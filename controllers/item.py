@@ -6,6 +6,7 @@ from dxfwrite import DXFEngine as dxf
 import cStringIO
 import sys, os
 import jsonpickle
+import g2
 
 
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -88,17 +89,19 @@ def new():
         pData=f.read()
         f.close()
         prj_data=pData
+        title=PRJdata["title"]
 
     else:
         form=[]
         scripts=SCRIPT()
         prj_data={}
+        title="seleziona un progetto"
 
     print 'avviato nuovo progetto '+projectName
     a={'projectname':projectName,
        'form':form,'scripts':str(scripts),
        'prj_data':prj_data,
-       'prj_title':PRJdata["title"]}
+       'prj_title':title}
     return json.dumps(a)
 
 
