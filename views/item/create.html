@@ -208,7 +208,6 @@
     function clear_all()
     {
         localStorage.clear();
-        //localStorage.setItem('prj_script',"<script id='prjScript'></script"+">");
         meForm.disableMenuOption("Costi");
         meForm.disableMenuOption("Produzione");
         meForm.updateMenu();
@@ -301,7 +300,6 @@
     function update_item()
       {
        //get form parameters
-       //var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
        PARAMETERS_MODIFIED=false
        MODIFICATION_IN_PROGRESS=true
 
@@ -323,7 +321,6 @@
                     else
                       {
                        MODIFICATION_IN_PROGRESS=false;
-                       //console.log('in progress:',modification_in_progress)
                       }
                   }
             })
@@ -333,12 +330,10 @@
     function refresh_form()
     {
         update_prj_data();
-
         meForm.deployForm('projects',
                           localStorage.prj_title,
                           JSON.parse(localStorage.form_data),
                           JSON.parse(localStorage.prj_data));
-
     }
 
 
@@ -388,59 +383,8 @@
 
     <script>
 
-    function fill_materials_selector(material=JSON.parse(localStorage.prj_data).material,
-                                     thk=JSON.parse(localStorage.prj_data).thickness)
-    {
-        console.log(material);
-        $.ajax(
-            {
-               url: "/makeasy/item/getJson",
-               type: "POST",
-               data: {'jsonPath':"Materials/material_quality.json"},
-               dataType: "json",
-               success:function(result)
-                        {
-                            MATERIALS = JSON.parse(result.source)
-                            var htmlOptions=" ";
-                            for (var key in MATERIALS)
-                            {
-                                htmlOptions+="<OPTION value='"+key+"'>"+MATERIALS[key].name+"</OPTION>";
-                            }
-                            var replace="<SELECT name='material:string'"
-                            replace +=" onchange=fill_thickness_selector() >"
-                            replace +=htmlOptions
-                            replace +="</SELECT>"
-                            $("select[name='material:string']").replaceWith(replace);
-                            $("select[name='material:string']").val(material)
-                            fill_thickness_selector(material,thk);
-
-                            update_all();
-                        }
-            })
-    }
-
-
-    function fill_thickness_selector(quality=$("select[name='material:string']").val(),value)
-    {
-        if (value==null)
-        {value=JSON.parse(localStorage.prj_data).thickness}
-        var list=MATERIALS[quality].thickness
-        var htmlOptions=" ";
-        for (var key in list)
-        {
-            htmlOptions+="<OPTION value='"+key+"'>"+list[key].name+"</OPTION>";
-        }
-        var replace="<SELECT name='thickness:number'>"
-            replace +=htmlOptions
-       replace +="</SELECT>"
-       $("select[name='thickness:number']").replaceWith(replace);
-       $("select[name='thickness:number']").val(value);
-    }
-
-
     if (localStorage.prj_data)
     {
-
         meForm.afterDeployForm=function(){update_all();};
         meForm.enableMenuOption('Costi');
         meForm.enableMenuOption('Produzione');
@@ -450,8 +394,7 @@
                           localStorage.getItem('prj_title'),
                           JSON.parse(localStorage.form_data),
                           JSON.parse(localStorage.prj_data));
-        //update_item();
-        //update_shape();
+        update_shape();
     }
 
     </script>
