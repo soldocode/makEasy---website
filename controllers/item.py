@@ -8,14 +8,11 @@ import sys, os
 import jsonpickle
 import g2
 
-
 pathname = os.path.abspath(os.path.dirname(sys.argv[0]))
 sysfolder=pathname.split('web2py')[0]
 prjfolder=sysfolder+"PyApp/makEasy/Projects/"
 meFolder=sysfolder+"PyApp/makEasy/"
 sys.path.append(meFolder)
-
-
 import makEasy
 
 
@@ -52,15 +49,20 @@ def create():
     return dict(form=form,scripts=scripts,prj_data=prj_data)
 
 
-def exportDXF():
+def estimate():
+    return dict(locals())
 
+
+def exportDXF():
     dxf_result=''
     if request.vars.name:
         data=json.loads(request.vars.jsonstring)
         item=makEasy.newItemFromProject(request.vars.name,data['data_form'])
-        dxf_result=item.ExportDXF()
-
-    return json.dumps(dxf_result)
+        wf=item.WorkFlow
+        for ws in wf:
+            if ws.Work.Class=='PlasmaCut':
+                dxf_result=ws.getDXF()
+    return json.dumps([dxf_result])
 
 
 def new():
@@ -97,7 +99,7 @@ def new():
         prj_data={}
         title="seleziona un progetto"
 
-    print 'avviato nuovo progetto '+projectName
+    print ('avviato nuovo progetto '+projectName)
     a={'projectname':projectName,
        'form':form,'scripts':str(scripts),
        'prj_data':prj_data,
@@ -111,7 +113,6 @@ def createItem():
         prj_data=json.loads(request.vars.jsonstring)
         item=makEasy.newItemFromProject(request.vars.name,prj_data)
         meItem=jsonpickle.encode(item)
-
     return meItem
 
 
@@ -122,7 +123,6 @@ def saveItem():
         print prj_data
         item=makEasy.newItemFromProject(request.vars.name,prj_data)
         meItem=jsonpickle.encode(item)
-
     return meItem
 
 
