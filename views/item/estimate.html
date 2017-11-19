@@ -28,7 +28,7 @@
        function updateObjects(){};
     </script>
     <style>
-        div.header, #menu ul li, ul a.menu, .makEasy th {background-color: #6699cc;}
+        div.header, #menu ul li, ul a.menu, .makEasy th {background-color: #66ccaa; color:#194d3c}
         img.camera {width:36px;height:36px;cursor:pointer;}
     </style>
 
@@ -36,7 +36,7 @@
 
 <body>
     <div id='header' class='header' style="height:60px;z-index: 3;" >
-        <h1 style="color:#CCCCCC">articoli</h1>
+        <h1>articoli</h1>
         <nav style="display:inline; margin-left:20%;" >
             <ul id="menu" style="display:inline;">
             </ul>
@@ -54,7 +54,7 @@
 
             <h2 id="title" style="margin-left: 10px;"> </h2>
             <form action="#" enctype="multipart/form-data" id="data_form" method="post">
-                <table id="projects" class='makEasy' width="100%">
+                <table id="estimate" class='makEasy' width="100%">
                     <colgroup>
                         <col width="50%">
                         <col width="5%">
@@ -136,7 +136,7 @@
 
         function update_all()
                             {
-                                update_prj_data();
+                                //update_prj_data();
                                 update_shape();
                                 if (MODIFICATION_IN_PROGRESS==false)
                                     {
@@ -151,50 +151,14 @@
 
     <script id="menuScript">
     meForm.loadMenu
-                 ({"Progetti":
-                       {"on_click":"action_nuovo('')",
-                        "child":
-                            {
-                             "Carica Progetto":
-                               {
-                                "on_click":"$('#selectfiles').trigger('click')",
-                                "show":true
-                               },
-                               "Salva Progetto":
-                               {
-                                "on_click":"action_savePrj()",
-                                "show":true
-                               },
-                            "----------------":{"show":true},
-                            "Piastra":
-                               {
-                                "on_click":"action_nuovo('Piastra')",
-                                "show":true
-                               },
-                            "Flangia Circolare":
-                               {
-                                "on_click":"action_nuovo('CircularFlange')",
-                                "show":true
-                               },
-                            "Tronco di Cono":
-                               {
-                                "on_click":"action_nuovo('Tronco di Cono')",
-                                "show":true
-                               },
-                            "Profilo da Lamiera":
-                               {
-                                "on_click":"action_nuovo('Lamiera Piegata')",
-                                "show":true
-                               }
-                            },
-                       "show":true
-                      },
+                 ({"Torna al Progetto":
+                       {"on_click":"location.href = 'create';",
+                        "show":true},
                   "Costi":{"show":false},
                   "Produzione":{"show":false,
                                 "child":
                                 {
                                     "Esporta DXF taglio":{"show":true,"on_click":"action_esportaDXF()"},
-                                    "Esporta STL":{"show":true,"on_click":"action_esportaSTL()"},
                                     "Ordina Prodotto":{"show":false}
                                 }
                                }
@@ -202,8 +166,6 @@
 
 
     meForm.updateMenu();
-    document.getElementById('selectfiles').addEventListener('change',loadPrj, false);
-
 
     function clear_all()
     {
@@ -218,49 +180,6 @@
     }
 
 
-    function action_nuovo(projectname)
-    {
-        clear_all();
-
-        //invio chiamata ajax
-            $.ajax({
-            url: "{{=URL('item','new')}}",
-            type: "POST",
-            data: {'newproject':projectname},
-            dataType: "json",
-            success:function(result)
-                   {
-                    if (result.projectname!='')
-                    {
-                        meForm.enableMenuOption('Costi');
-                        meForm.enableMenuOption('Produzione');
-                        meForm.updateMenu();
-
-
-                        localStorage.setItem('prj_script',result.scripts);
-                        localStorage.setItem('form_data',result.form);
-                        localStorage.setItem('prj_data',result.prj_data);
-                        localStorage.setItem('prj_title',result.prj_title);
-                        localStorage.setItem('prj_name',result.projectname);
-                        location.reload(false);
-
-                    }
-                   }
-            })
-    }
-
-
-    function action_taglia()
-      {
-       $('#data_form').attr('action',"{{=URL('plasmacut','nesting')}}");
-       $('#data_form').submit();
-      }
-
-    function action_costi()
-      {
-       $('#data_form').attr('action',"{{=URL('platecut','costi')}}");
-       $('#data_form').submit();
-      }
 
     function action_esportaDXF()
       {
@@ -283,18 +202,10 @@
       }
 
 
-    function action_esportaSTL()
-      {
-       alert('esportaSTL in azione!!');
-       var blob = new Blob([exportSTL(objects.project.element)], {type: "text/plain;charset=utf-8"});
-       saveAs(blob, "ITEM.STL");
-      }
-
-
-    function update_prj_data()
-    {
-       localStorage.setItem('prj_data',JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null,4));
-    }
+   // function update_prj_data()
+    //{
+//       localStorage.setItem('prj_data',JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null,4));
+ //   }
 
 
     function update_item()
@@ -327,56 +238,30 @@
 
       }
 
-    function refresh_form()
-    {
-        update_prj_data();
-        meForm.deployForm('projects',
-                          localStorage.prj_title,
-                          JSON.parse(localStorage.form_data),
-                          JSON.parse(localStorage.prj_data));
-    }
+//    function refresh_form()
+//    {
+//        update_prj_data();
+//        meForm.deployForm('projects',
+//                          localStorage.prj_title,
+//                          JSON.parse(localStorage.form_data),
+//                          JSON.parse(localStorage.prj_data));
+//    }
 
-
-    function loadPrj(n)
-     {
-             //Recupera il primo file dalla lista
-             var f = n.target.files[0];
-
-             if (f)
-             {
-                 var r = new FileReader();
-                 r.onload = function(e)
-                     {
-                         var contents = e.target.result;
-                         var result=JSON.parse(contents)
-                         localStorage.setItem('form_data',result.form_data)
-                         localStorage.setItem('prj_name',result.prj_name)
-                         localStorage.setItem('prj_script',result.prj_script)
-                         localStorage.setItem('prj_data',result.prj_data)
-                     }
-                 r.readAsText(f);
-
-                 location.reload(false);
-             }
-             else {alert("Problemi nel caricamento del file!");}
-        }
-
-
-    function action_savePrj()
-    {
-      var data = JSON.stringify(localStorage,null,'\t');
-      var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
-      saveAs(blob, "ITEM.mePrj");
-    }
-
-
-    function action_archivia()
+      function deployForm(id)
       {
-        update_item();
-        var blob = new Blob([localStorage.item], {type: "text/plain;charset=utf-8"});
-        saveAs(blob, "ITEM.meItem");
+        $("h2#title").text(localStorage.prj_title);
+        $("table#estimate tbody").html("<tr></tr>");
+        item=JSON.parse(localStorage.item)
+        work_flow=item.WorkFlow
+        wstr={}
+        wstr.label='Materiale'
+        wstr.text=MATERIALS[item.ClassProperties.Material].name
+        wstr.text+=' sp'+item.ClassProperties.Thickness+' mm'
+        wstr.width=100
+        wstr.name='material'
+        $('#estimate tr:last').before(meForm.writeString(wstr))
+        $('#'+id).on("change",function(){update_all()})
       }
-
 
     </script>
 
@@ -385,17 +270,34 @@
 
     if (localStorage.prj_data)
     {
-        meForm.afterDeployForm=function(){update_all();};
-        meForm.enableMenuOption('Costi');
+        //meForm.afterDeployForm=function(){update_all();};
+        //meForm.enableMenuOption('Costi');
         meForm.enableMenuOption('Produzione');
         meForm.updateMenu();
         $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
-        meForm.deployForm('projects',
-                          localStorage.getItem('prj_title'),
-                          JSON.parse(localStorage.form_data),
-                          JSON.parse(localStorage.prj_data));
-        update_shape();
+        //deployForm('estimate',
+        //           localStorage.getItem('prj_title'),
+        //           JSON.parse(localStorage.item),
+        //           JSON.parse(localStorage.prj_data));
+        //update_shape();
     }
+
+
+    $.ajax(
+    {
+        url: "/makeasy/item/getJson",
+        type: "POST",
+        data: {'jsonPath': "Materials/material_quality.json"},
+        dataType: "json",
+        success:function(result)
+        {
+            MATERIALS = JSON.parse(result.source)
+            deployForm('estimate')
+            update_shape();
+        }
+    })
+
+
 
     </script>
 
