@@ -28,7 +28,7 @@
        function updateObjects(){};
     </script>
     <style>
-        div.header, #menu ul li, ul a.menu, .makEasy th {background-color: #66ccaa; color:#194d3c}
+        div.header, #menu ul li, ul a.menu, .makEasy th, glyphicon {background-color: #66ccaa; color:#194d3c}
         img.camera {width:36px;height:36px;cursor:pointer;}
     </style>
 
@@ -202,11 +202,6 @@
       }
 
 
-   // function update_prj_data()
-    //{
-//       localStorage.setItem('prj_data',JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null,4));
- //   }
-
 
     function update_item()
       {
@@ -238,14 +233,6 @@
 
       }
 
-//    function refresh_form()
-//    {
-//        update_prj_data();
-//        meForm.deployForm('projects',
-//                          localStorage.prj_title,
-//                          JSON.parse(localStorage.form_data),
-//                          JSON.parse(localStorage.prj_data));
-//    }
 
       function deployForm(id)
       {
@@ -253,16 +240,18 @@
         $("table#estimate tbody").html("<tr></tr>");
         item=JSON.parse(localStorage.item)
         work_flow=item.WorkFlow
-        wstr={}
-        wstr.label='Materiale'
-        wstr.text=MATERIALS[item.ClassProperties.Material].name
-        wstr.text+=' sp'+item.ClassProperties.Thickness+' mm'
-        wstr.width=100
-        wstr.name='material'
-        $('#estimate tr:last').before(meForm.writeString(wstr))
+        mat_cl={name:'material',label:'materiali',rows:[]}
+        mat_text=MATERIALS[item.ClassProperties.Material].name
+        mat_text+=' sp'+item.ClassProperties.Thickness+' mm'
+        mat_cl.rows.push({'title':mat_text})
+        $('#estimate tr:last').before(meForm.editCheckList(mat_cl))
+        work_cl={name:'works',label:'lavorazioni',rows:[]}
+        for (i in work_flow){work_cl.rows.push({'title':work_flow[i].Work.Title})}
+        $('#estimate tr:last').before(meForm.editCheckList(work_cl))
+        email_field={name:'email',label:'e-mail',width:100}
+        $('#estimate tr:last').before(meForm.editString(email_field))
         $('#'+id).on("change",function(){update_all()})
       }
-
     </script>
 
 
@@ -270,16 +259,9 @@
 
     if (localStorage.prj_data)
     {
-        //meForm.afterDeployForm=function(){update_all();};
-        //meForm.enableMenuOption('Costi');
         meForm.enableMenuOption('Produzione');
         meForm.updateMenu();
         $("#prjScript").replaceWith(localStorage.getItem('prj_script'));
-        //deployForm('estimate',
-        //           localStorage.getItem('prj_title'),
-        //           JSON.parse(localStorage.item),
-        //           JSON.parse(localStorage.prj_data));
-        //update_shape();
     }
 
 
