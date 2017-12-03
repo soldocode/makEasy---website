@@ -56,9 +56,9 @@
             <form action="#" enctype="multipart/form-data" id="data_form" method="post">
                 <table id="estimate" class='makEasy' width="100%">
                     <colgroup>
-                        <col width="50%">
+                        <col width="30%">
                         <col width="5%">
-                        <col width="45%">
+                        <col width="65%">
                     </colgroup>
                     <tbody>
                         <tr></tr>
@@ -248,10 +248,37 @@
         work_cl={name:'works',label:'lavorazioni',rows:[]}
         for (i in work_flow){work_cl.rows.push({'title':work_flow[i].Work.Title})}
         $('#estimate tr:last').before(meForm.editCheckList(work_cl))
+        quantity_field={name:'quantity',label:'quantità richieste',width:25}
+        $('#estimate tr:last').before(meForm.editNumber(quantity_field,1))
         email_field={name:'email',label:'e-mail',width:100}
         $('#estimate tr:last').before(meForm.editString(email_field))
         $('#'+id).on("change",function(){update_all()})
+        btns={"request_offer":{"title":"Richiedi Offerta","arg":""}}
+        $('#estimate tr:last').before(meForm.TR_BUTTONS('offer',btns,3))
       }
+
+
+    function request_offer()
+    {
+        //raccolgo dati form in struttura json
+        var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+        //invio una chiamata ajax
+        $.ajax({
+            url: "{{=URL('item','sendOffer')}}",
+            type: "POST",
+            data: {'offer':JSON.stringify(param),
+                   'prj_name':localStorage.prj_name,
+                   'item':localStorage.item,
+                   'prj_data':localStorage.prj_data,
+            },
+            dataType: "json",
+            success:function(result)
+            {
+               alert(result.msg);
+            }
+        })
+    }
+
     </script>
 
 
