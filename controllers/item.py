@@ -55,6 +55,22 @@ def estimate():
 
 
 def sendOffer():
+
+    def data_to_html(data):
+        html="<ul>"
+        for f in data:
+            while len(f)>0:
+                d=f.popitem()
+                html+="<li>"+d[0]+": "
+                if d[1].__class__.__name__=='list':
+                    html+=data_to_html(d[1])
+                else:
+                    html+=str(d[1])
+                html+="</li>"
+        html+="</ul>"
+        return html
+
+
     # get parameters
     #item=json.loads(request.vars.item)
     prj_name=request.vars.prj_name
@@ -74,6 +90,8 @@ def sendOffer():
     prj_form=json.load(f)
     f.close()
 
+    prj_repr=item.Project.getDataRepr(item.ProjectParameters)
+
     html=''
     html+="<p>"
     html+="Buongiorno,<br>Vi inviamo offerta per la fornitura di:<br><br>"
@@ -82,11 +100,8 @@ def sendOffer():
     html+=" in "+item.ClassProperties['Material']
     html+=" sp " + str(item.ClassProperties['Thickness'])+"mm"
     html+=" con le seguenti dimensioni:<br>"
-    for field in prj_form['form_data']:
-        if 'label' in field:
-            html+="> "+field['label']+": "+"<br>"
-    #html+=json_prj_data
-    #html+=json_offer
+    html+=data_to_html(prj_repr)
+    #html+=json.dumps(prj_repr)
     html+="</p>"
     result=requests.post(
         "https://api.mailgun.net/v3/carpenteriasoldini.it/messages",
