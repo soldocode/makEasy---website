@@ -22,6 +22,7 @@
         var MODIFICATION_IN_PROGRESS=false
         var PARAMETERS_MODIFIED=true
         var MATERIALS={};
+        var csrftoken="x django"
     </script>
     <script id="prjScript">
        function update_shape(){};
@@ -69,7 +70,7 @@
         <div id="3Dscene" style="float:left;width:100%;height:90%;z-index: 1;"></div>
     </div>
 
-    <div id='footer' style="height:50px;position:absolute;bottom:0;right:5;z-index:3;">
+    <div id='footer' style="height:50px;position:absolute;bottom:0px;right:5px;z-index:3;">
         <img class="svg camera" src="{{=URL('static/images','view_front.svg')}}" onclick=rotateCamera('front')>
         <img class="svg camera" src="{{=URL('static/images','view_top.svg')}}"   onclick=rotateCamera('top')>
         <img class="svg camera" src="{{=URL('static/images','view_right.svg')}}" onclick=rotateCamera('right')>
